@@ -13,7 +13,7 @@
     <div class="maincontentinner">
 
         {!! $tpl->displayNotification() !!}
-        <h5 class="subtitle">Sync Leantime with your external applications</h5>
+        <h5 class="subtitle">Sync Time with your external applications</h5>
         <p>Available Integrations</p>
 
         <div class="row">

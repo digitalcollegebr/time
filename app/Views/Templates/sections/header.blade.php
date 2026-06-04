@@ -11,7 +11,7 @@
 <meta name="color-scheme" content="{{ $themeColorMode }}">
 <meta name="theme" content="{{ $theme }}">
 <meta name="identifier-URL" content="{!! BASE_URL !!}">
-<meta name="leantime-version" content="{{ $version }}">
+<meta name="app-version" content="{{ $version }}">
 
 @dispatchEvent('afterMetaTags')
 

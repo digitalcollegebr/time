@@ -61,7 +61,7 @@ class MigrateCommand extends Command
                         'password' => '',
                         'firstname' => '',
                         'lastname' => '',
-                        'company' => 'Leantime',
+                        'company' => 'Time',
                     ];
                 } else {
                     $email = $input->getOption('email');

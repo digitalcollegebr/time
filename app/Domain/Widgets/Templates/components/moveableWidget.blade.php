@@ -16,9 +16,9 @@
                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="javascript:void(0)" class="fitContent"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Resize to fit content</a></li>
+                        <li><a href="javascript:void(0)" class="fitContent"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Ajustar ao conteúdo</a></li>
                         @if(empty($alwaysVisible))
-                            <li><a href="javascript:void(0)" class="removeWidget"><i class="fa fa-eye-slash"></i> Hide</a></li>
+                            <li><a href="javascript:void(0)" class="removeWidget"><i class="fa fa-eye-slash"></i> Ocultar</a></li>
                         @endif
                     </ul>
                 </div>

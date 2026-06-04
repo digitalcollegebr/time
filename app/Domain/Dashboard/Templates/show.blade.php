@@ -37,14 +37,14 @@
                                 <a
                                     href="{{ BASE_URL }}/projects/showProject/{{ $project['id'] }}"
 
-                                ><i class="fa fa-edit"></i> Edit Project</a>
+                                ><i class="fa fa-edit"></i> Editar Projeto</a>
                             </li>
                             <li class="dropdown-item">
                                 <a
                                     href="{{ BASE_URL }}/projects/delProject/{{ $project['id'] }}"
                                     class="delete"
 
-                                ><i class="fa fa-trash"></i> Delete Project</a>
+                                ><i class="fa fa-trash"></i> Excluir Projeto</a>
                             </li>
 
                         </ul>
@@ -103,7 +103,7 @@
             </div>
 
             <div class="maincontentinner tw-z-10 latest-todos">
-                <a href="#/tickets/newTicket" class="btn btn-link action-link pull-right" style="margin-top:-7px;"><i class="fa fa-plus"></i> Create To-Do</a>
+                <a href="#/tickets/newTicket" class="btn btn-link action-link pull-right" style="margin-top:-7px;"><i class="fa fa-plus"></i> Criar Tarefa</a>
                 <h5 class="subtitle">{{ __('headlines.latest_todos') }}</h5>
                 <br/>
                 <ul class="sortableTicketList">

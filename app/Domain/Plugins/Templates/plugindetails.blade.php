@@ -85,7 +85,7 @@
                             <thead>
                                 <tr>
                                     <th>Plugin Version:</th>
-                                    <th>Compatible With Leantime Versions:</th>
+                                    <th>Compatible With Time Versions:</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -354,7 +354,7 @@ class Users extends BaseService
 
         $message = sprintf(
             $this->language->__('email_notifications.user_invite_message'),
-            session('userdata.name') ?? 'Leantime',
+            session('userdata.name') ?? 'Time',
             $actual_link,
             $user
         );
@@ -363,7 +363,7 @@ class Users extends BaseService
 
         $to = [$user];
 
-        $mailer->sendMail($to, session('userdata.name') ?? 'Leantime');
+        $mailer->sendMail($to, session('userdata.name') ?? 'Time');
     }
 
     /**

@@ -14,13 +14,13 @@ class DefaultConfig
      * @var string Name of your site, can be changed later
      */
     #[LaravelConfig('app.name')]
-    public string $sitename = 'Leantime';
+    public string $sitename = 'Time';
 
     /**
      * @var string Default language
      */
     #[LaravelConfig('app.locale')]
-    public string $language = 'en-US';
+    public string $language = 'pt-BR';
 
     /**
      * @var string Default logo path, can be changed later

@@ -143,9 +143,9 @@ class Menu
 
         $projectSelectGrouping =
             [
-                'structure' => 'Group by Project Structure',
-                'client' => 'Group by Client',
-                'none' => 'No Grouping',
+                'structure' => 'Agrupar por Estrutura de Projeto',
+                'client' => 'Agrupar por Cliente',
+                'none' => 'Sem Agrupamento',
             ];
 
         return self::dispatch_filter('projectSelectorGrouping', $projectSelectGrouping);

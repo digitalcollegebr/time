@@ -25,7 +25,7 @@
 
     <x-global::accordion id="myProjectWidget-favorites" class="{{ $background }}">
         <x-slot name="title">
-            ⭐ My Favorites
+            ⭐ Meus Favoritos
         </x-slot>
         <x-slot name="content">
 
@@ -53,7 +53,7 @@
 
     <x-global::accordion id="myProjectWidget-otherProjects" class="{{ $background }}">
         <x-slot name="title">
-            🗂️ All Assigned Projects
+            🗂️ Todos os Projetos Atribuídos
         </x-slot>
         <x-slot name="content">
 

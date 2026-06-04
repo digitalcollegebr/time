@@ -1006,7 +1006,7 @@ class Calendar extends BaseService
             $response = $client->get($url, [
                 'headers' => [
                     'Accept' => 'text/calendar',
-                    'User-Agent' => 'Leantime Calendar Integration v'.$this->config->appVersion,
+                    'User-Agent' => 'Time Calendar Integration v'.$this->config->appVersion,
                 ],
             ]);
 
