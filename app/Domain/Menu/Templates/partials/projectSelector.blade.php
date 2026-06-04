@@ -14,7 +14,7 @@
             <div class="projectSelectorFooter" style="border:none; border-bottom:1px solid var(--main-border-color)">
             <ul class="selectorList projectList">
                 <li>
-                    <a href="{{ BASE_URL }}/projects/showMy"><strong><i class="fa-solid fa-house-flag"></i> Open Project Hub</strong></a>
+                    <a href="{{ BASE_URL }}/projects/showMy"><strong><i class="fa-solid fa-house-flag"></i> Abrir Hub de Projetos</strong></a>
                 </li>
 
                 @if ($login::userIsAtLeast("manager"))

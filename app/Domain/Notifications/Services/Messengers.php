@@ -46,7 +46,7 @@ class Messengers
      */
     public function sendNotificationToMessengers(NotificationModel $notification, $projectName, array|string $messengers = 'all'): void
     {
-        $this->projectName = $projectName ?? 'a Leantime project';
+        $this->projectName = $projectName ?? 'a Time project';
 
         $messengersToSend = [];
         if (is_string($messengers) && $messengers == 'all') {
@@ -116,7 +116,7 @@ class Messengers
             $message = $this->prepareMessage($notification);
 
             $data = [
-                'username' => 'Leantime',
+                'username' => 'Time',
                 'icon_url' => '',
                 'text' => '',
                 'attachments' => $message,
@@ -232,7 +232,7 @@ class Messengers
 
                 // For details on the JSON layout: https://birdie0.github.io/discord-webhooks-guide/index.html
                 $data_string = json_encode([
-                    'avatar_url' => 'https://s3-us-west-2.amazonaws.com/leantime-website/wp-content/uploads/2019/03/22224016/logoIcon.png',
+                    'avatar_url' => '',
                     'tts' => false,
                     'embeds' => [
                         [

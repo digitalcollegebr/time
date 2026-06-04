@@ -2,9 +2,6 @@
 <html dir="{{ __('language.direction') }}" lang="{{ __('language.code') }}">
 <head>
     @include('global::sections.header')
-    <style>
-        .leantimeLogo { position: fixed; bottom: 10px; right: 10px; }
-    </style>
     @stack('styles')
 </head>
 
@@ -54,9 +51,6 @@
             </div>
         </div>
 
-    </div>
-    <div class="leantimeLogo">
-        <img style="height: 25px;" src="{!! BASE_URL !!}/dist/images/logo-powered-by-leantime.png">
     </div>
 </div>
 

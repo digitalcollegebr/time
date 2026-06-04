@@ -1,0 +1,21 @@
+# Build context excludes — keep the image small and reproducible.
+.git
+.github
+node_modules
+vendor
+public/dist
+public/userfiles
+userfiles
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+tests
+.dev
+*.log
+.env
+config/.env
+.idea
+.vscode
+.DS_Store

@@ -122,7 +122,7 @@ class Push
      */
     public function sendFromNotification(NotificationModel $notification, array $userIds): void
     {
-        $title = $notification->subject !== '' ? $notification->subject : 'Leantime';
+        $title = $notification->subject !== '' ? $notification->subject : 'Time';
         $body = $notification->message !== '' ? $notification->message : '';
 
         // Module is a literal string ('tickets'/'comments'/'goalcanvas'/…)

@@ -215,7 +215,7 @@ class Mailer
 
         $this->mailAgent->isHTML(true); // Set email format to HTML
 
-        $this->mailAgent->setFrom($this->emailDomain, $from.' (Leantime)');
+        $this->mailAgent->setFrom($this->emailDomain, $from.' (Time)');
 
         $this->mailAgent->Subject = $this->subject;
 

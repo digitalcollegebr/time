@@ -77,7 +77,7 @@
 
             <x-global::accordion id="myProjectsHub-favorites" class="noBackground">
                 <x-slot name="title">
-                    ⭐ My Favorites
+                    ⭐ Meus Favoritos
                 </x-slot>
                 <x-slot name="content">
                     <div class="row">

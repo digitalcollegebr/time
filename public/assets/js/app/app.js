@@ -13,7 +13,7 @@ leantime.theme = theme;
 var appURL = jQuery('meta[name=identifier-URL]').attr("content");
 leantime.appUrl = appURL;
 
-var leantimeVersion = jQuery('meta[name=leantime-version]').attr("content");
+var leantimeVersion = jQuery('meta[name=app-version]').attr("content");
 leantime.version = leantimeVersion;
 
 leantime.replaceSVGColors = function () {

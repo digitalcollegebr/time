@@ -114,6 +114,9 @@ nbproject
 config/config.yaml
 config/.env
 
+# Root .env used by docker compose (local secrets — never commit)
+/.env
+
 # Documentor
 .phpdoc/cache
 

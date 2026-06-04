@@ -1,0 +1,62 @@
+# Docker Compose for deploying the "Time" whitelabel via Coolify (build-from-source).
+#
+# Coolify usage:
+#   - Build Pack: "Docker Compose"
+#   - Compose file: docker-compose.yml (this file)
+#   - Set the environment variables below in Coolify's UI (Environment Variables tab).
+#
+# The app image is BUILT from the Dockerfile in this repo, so your rebrand is included.
+services:
+  time:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      LEAN_DB_HOST: time_db
+      LEAN_DB_DATABASE: ${LEAN_DB_DATABASE:-leantime}
+      LEAN_DB_USER: ${LEAN_DB_USER:-leantime}
+      LEAN_DB_PASSWORD: ${LEAN_DB_PASSWORD}
+      LEAN_SITENAME: ${LEAN_SITENAME:-Time}
+      LEAN_APP_URL: ${LEAN_APP_URL}
+      LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD}
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - CAP_CHOWN
+      - CAP_SETGID
+      - CAP_SETUID
+    ports:
+      - "${LEAN_PORT:-8080}:8080"
+    volumes:
+      - public_userfiles:/var/www/html/public/userfiles
+      - userfiles:/var/www/html/userfiles
+      - plugins:/var/www/html/app/Plugins
+      - logs:/var/www/html/storage/logs
+    depends_on:
+      time_db:
+        condition: service_healthy
+
+  time_db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${LEAN_DB_DATABASE:-leantime}
+      MYSQL_USER: ${LEAN_DB_USER:-leantime}
+      MYSQL_PASSWORD: ${LEAN_DB_PASSWORD}
+    command: --character-set-server=UTF8MB4 --collation-server=UTF8MB4_unicode_ci
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  db_data:
+  userfiles:
+  public_userfiles:
+  plugins:
+  logs:
