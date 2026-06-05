@@ -61,7 +61,7 @@ return [
         'timezone' => env('LEAN_DEFAULT_TIMEZONE', 'America/Los_Angeles'),
         'env' => env('LEAN_ENV', ''),
         'debug' => env('LEAN_DEBUG', 0),
-        'key' => env('LEAN_SESSION_PASSWORD', '123'),
+        'key' => env('LEAN_SESSION_PASSWORD') ?: throw new \RuntimeException('LEAN_SESSION_PASSWORD env var is required'),
     ],
     'debug_blacklist' => [
         '_ENV' => [
