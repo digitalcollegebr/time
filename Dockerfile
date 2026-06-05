@@ -98,12 +98,20 @@ RUN set -ex; \
              /var/www/html/storage/framework/views \
              /var/www/html/app/Plugins \
              /run /var/log/nginx /var/lib/nginx; \
-    chown -R www-data:www-data /var/www/html /run /var/log/nginx /var/lib/nginx; \
+    # Only the writable dirs need www-data ownership. Avoid a recursive chown of
+    # the whole tree (vendor/ may contain dangling symlinks from composer packages
+    # that make `chown -R` fail under `set -e`). App code only needs to be readable.
+    chown www-data:www-data /var/www/html; \
+    chown -R www-data:www-data /var/www/html/userfiles \
+                               /var/www/html/public/userfiles \
+                               /var/www/html/bootstrap/cache \
+                               /var/www/html/storage \
+                               /var/www/html/app/Plugins \
+                               /run /var/log/nginx /var/lib/nginx; \
     chmod -R 775 /var/www/html/userfiles \
                  /var/www/html/public/userfiles \
                  /var/www/html/bootstrap/cache \
-                 /var/www/html/storage/logs \
-                 /var/www/html/storage/framework \
+                 /var/www/html/storage \
                  /var/www/html/app/Plugins
 
 USER www-data
