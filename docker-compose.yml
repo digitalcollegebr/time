@@ -26,6 +26,8 @@ services:
       LEAN_SITENAME: ${LEAN_SITENAME:-Time}
       LEAN_APP_URL: ${LEAN_APP_URL}
       LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD}
+      LEAN_DEFAULT_TIMEZONE: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
+      TZ: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
     security_opt:
       - no-new-privileges:true
     cap_add:
