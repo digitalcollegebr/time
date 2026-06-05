@@ -6,6 +6,12 @@
 #   - Set the environment variables below in Coolify's UI (Environment Variables tab).
 #
 # The app image is BUILT from the Dockerfile in this repo, so your rebrand is included.
+#
+# REQUIRED environment variables (must be set in Coolify — no defaults):
+#   LEAN_DB_PASSWORD      Database password for the app user
+#   MYSQL_ROOT_PASSWORD   MySQL root password (use: openssl rand -base64 32)
+#   LEAN_APP_URL          Full public URL, e.g. https://time.seudominio.com.br
+#   LEAN_SESSION_PASSWORD Session encryption key (use: openssl rand -base64 32)
 services:
   time:
     build:
@@ -36,6 +42,12 @@ services:
     depends_on:
       time_db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   time_db:
     image: mysql:8.4
