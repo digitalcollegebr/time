@@ -146,3 +146,5 @@ cleanup-architecture.md
 # Helpers de teste local (preview)
 .claude/launch.json
 .claude/preview-proxy.mjs
+
+docker-compose.override.yml

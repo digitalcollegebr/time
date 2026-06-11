@@ -14,7 +14,7 @@ class DefaultConfig
      * @var string Name of your site, can be changed later
      */
     #[LaravelConfig('app.name')]
-    public string $sitename = 'Time';
+    public string $sitename = 'GTI';
 
     /**
      * @var string Default language

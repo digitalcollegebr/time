@@ -36,8 +36,8 @@ EventDispatcher::add_filter_listener('leantime.domain.auth.*.belowWelcomeText', 
 
     $quotes = [];
     $quotes[] = "\"It's the first project management app I've used for more than a week, and it makes sense too.\"<br /><br />- Interior Designer";
-    $quotes[] = '"For me, Time is very cool, because it is lean. Not 3 million options to think about. The more you put in, the more it could be overloaded."<br /><br />- Product Manager';
-    $quotes[] = '"We are a small digital marketing agency and have been using Time for a couple of months. Getting great feedback from our clients."<br /><br />- CEO';
+    $quotes[] = '"For me, GTI is very cool, because it is lean. Not 3 million options to think about. The more you put in, the more it could be overloaded."<br /><br />- Product Manager';
+    $quotes[] = '"We are a small digital marketing agency and have been using GTI for a couple of months. Getting great feedback from our clients."<br /><br />- CEO';
 
     $random = rand(0, 2);
 

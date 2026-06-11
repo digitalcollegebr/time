@@ -1,4 +1,4 @@
-<h1>Latest From Time</h1>
+<h1>Latest From GTI</h1>
 <br />
 <div>
     <ul>

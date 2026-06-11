@@ -55,7 +55,7 @@ return [
             Illuminate\Foundation\Providers\ComposerServiceProvider::class,
 
         ],
-        'name' => env('LEAN_SITENAME', 'Time'),
+        'name' => env('LEAN_SITENAME', 'GTI'),
         'locale' => env('LEAN_LANGUAGE', 'en-US'),
         'url' => env('LEAN_APP_URL', ''),
         'timezone' => env('LEAN_DEFAULT_TIMEZONE', 'America/Los_Angeles'),

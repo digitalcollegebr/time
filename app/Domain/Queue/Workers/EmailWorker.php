@@ -104,7 +104,7 @@ class EmailWorker
             $this->mailer->setHtml($formattedHTML);
             $to = [$recipient];
 
-            $this->mailer->sendMail($to, 'Time System');
+            $this->mailer->sendMail($to, 'GTI System');
 
             // Delete the corresponding messages from the queue when the mail is sent
             // TODO here : only delete these if the send was successful

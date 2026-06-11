@@ -420,7 +420,7 @@ class Helper
 
         $values = [
             'name' => 'My Project',
-            'details' => 'Welcome to your first project in Time!<br />This is your space to organize tasks, track goals, and plan your work. Feel free to modify anything here or create additional projects as you grow. This project is just for you to get started',
+            'details' => 'Welcome to your first project in GTI!<br />This is your space to organize tasks, track goals, and plan your work. Feel free to modify anything here or create additional projects as you grow. This project is just for you to get started',
             'clientId' => 0,
             'hourBudget' => 0,
             'assignedUsers' => [['id' => $userId, 'projectRole' => '']],
@@ -466,13 +466,13 @@ class Helper
         if (in_array($role, ['admin', 'owner', 'manager'])) {
 
             $values['headline'] = '👥 Invite your team mates';
-            $values['description'] = 'Whether you are working with someone or just need an accountability buddy. Using Time as a group helps to stay on track and motivated <a href="'.BASE_URL.'/users/showAll">User Management</a>';
+            $values['description'] = 'Whether you are working with someone or just need an accountability buddy. Using GTI as a group helps to stay on track and motivated <a href="'.BASE_URL.'/users/showAll">User Management</a>';
             $values['dateToFinish'] = dtHelper()->userNow()->addDays(1)->formatDateForUser();
             $ticketService->quickAddTicket($values);
         }
 
-        $values['headline'] = '🎯 Learn More about Time\'s Project Structure';
-        $values['description'] = 'Time organizes your work into projects, milestones, goals and tasks. Explore the help section to learn more about project structure and best practices.';
+        $values['headline'] = '🎯 Learn More about GTI\'s Project Structure';
+        $values['description'] = 'GTI organizes your work into projects, milestones, goals and tasks. Explore the help section to learn more about project structure and best practices.';
         $values['dateToFinish'] = dtHelper()->userNow()->addDays(1)->formatDateForUser();
         $ticketService->quickAddTicket($values);
 

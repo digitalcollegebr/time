@@ -35,7 +35,7 @@
 
             <h5 class="subtitle">What are you importing?</h5>
             <br />
-            On this screen you can choose what you would like to synchronize. Choose an entity on the left and map it to someting in Time on the right.
+            On this screen you can choose what you would like to synchronize. Choose an entity on the left and map it to someting in GTI on the right.
             The arrow indicates that we will synchronize from one location to the other.<br /><br />
 
             <form method="post" action="{{ BASE_URL }}/connector/integration/?provider={{ $provider->id }}&step=fields{{ $urlAppend }}">
@@ -55,9 +55,9 @@
                         <i class="fa fa-arrow-right"></i>
                     </div>
                     <div class="col-md-2">
-                        <h1>To (Time)</h1>
+                        <h1>To (GTI)</h1>
 
-                        <label for="leantimeEntities">Time</label>
+                        <label for="leantimeEntities">GTI</label>
                         <select name="leantimeEntities" id="leantimeEntities" style="width:100%;">
                             @foreach ($leantimeEntities as $key => $entity)
                                 <option value="{{ $key }}">{{ $entity['name'] }}</option>

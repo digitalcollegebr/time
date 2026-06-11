@@ -1,13 +1,13 @@
 :root {
 
-    --accent1: hsla(199, 100%, 20%, 1);
-    --accent1-hsl: 199, 100%, 20%;
+    --accent1: hsla(250, 100%, 62%, 1);
+    --accent1-hsl: 250, 100%, 62%;
     --accent1-hover: #555;
     --accent1-color:#fff;
     --focus-ring-color: var(--accent1);
 
-    --accent2: hsla(168, 100%, 33%, 1);
-    --accent2-hsl: 168, 100%, 33%;
+    --accent2: hsla(218, 74%, 15%, 1);
+    --accent2-hsl: 218, 74%, 15%;
     --accent2-hover: #555;
     --accent2-color:#fff;
 
@@ -91,7 +91,7 @@
     --header-gradient:linear-gradient(135deg, var(--accent1) 20%,var(--accent2) 90%);
     --element-gradient:linear-gradient(135deg, var(--accent1) 20%,var(--accent2) 100%);
 
-    --primary-font-family: 'Roboto', 'Helvetica Neue', Helvetica, sans-serif;
+    --primary-font-family: 'Inter', 'Roboto', 'Helvetica Neue', Helvetica, sans-serif;
 
     --font-size-xs: 10px;
     --font-size-s: 12px;

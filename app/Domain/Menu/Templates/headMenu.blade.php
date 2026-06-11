@@ -126,7 +126,7 @@
                 </a>
             </li>
             <li class="nav-header border">System</li>
-            <li><span class="nav-text">Time V{{ app(\Leantime\Core\Configuration\AppSettings::class)->appVersion }}</span></li>
+            <li><span class="nav-text">GTI V{{ app(\Leantime\Core\Configuration\AppSettings::class)->appVersion }}</span></li>
         </ul>
     </li>
 
