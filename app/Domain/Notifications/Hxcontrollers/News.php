@@ -34,10 +34,9 @@ class News extends HtmxController
      */
     public function get()
     {
-        if (! env('LEAN_NEWS_ENABLED', true)) {
-            $this->tpl->assign('rss', 'News service is disabled');
-
-            return;
+        // Whitelabel: desabilitado por padrão (o feed aponta para o blog do Leantime).
+        if (! env('LEAN_NEWS_ENABLED', false)) {
+            return $this->tpl->emptyResponse();
         }
 
         $news = false;
