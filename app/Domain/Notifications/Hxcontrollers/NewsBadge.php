@@ -33,7 +33,8 @@ class NewsBadge extends HtmxController
      */
     public function get()
     {
-        if (! env('LEAN_NEWS_ENABLED', true)) {
+        // Whitelabel: desabilitado por padrão (o feed aponta para o blog do Leantime).
+        if (! env('LEAN_NEWS_ENABLED', false)) {
             $this->tpl->assign('hasNews', false);
 
             return;

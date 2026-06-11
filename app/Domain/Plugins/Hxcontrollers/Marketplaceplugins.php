@@ -35,15 +35,9 @@ class Marketplaceplugins extends HtmxController
 
     public function getLatest()
     {
-        /** @var MarketplacePlugin[] $plugins */
-        $plugins = $this->pluginService->getLatestPluginUpdates(
-            $this->incomingRequest->query->get('page', 1),
-            $this->incomingRequest->query->get('search', ''),
-        );
-
-        $this->tpl->assign('plugins', $plugins);
-
-        return $this->tpl->displayPartial('plugins::partials.latestPlugins');
+        // Whitelabel: feed de novidades do marketplace Leantime desativado.
+        // O ícone foi removido do headMenu; este guard impede acesso por URL direta.
+        return $this->tpl->emptyResponse();
     }
 
     public function search(): void {}
