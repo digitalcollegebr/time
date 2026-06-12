@@ -1,8 +1,9 @@
 # Docker Compose de produção do whitelabel GTI (Coolify faz PULL da imagem pronta).
 #
-# A imagem é buildada localmente a partir desta branch e publicada no Docker Hub:
-#   docker build -t danielmonteirodc/time-gti:<versão> -t danielmonteirodc/time-gti:latest .
-#   docker push danielmonteirodc/time-gti:<versão> && docker push danielmonteirodc/time-gti:latest
+# A imagem é buildada localmente a partir desta branch e publicada no Docker Hub.
+# IMPORTANTE: buildar MULTI-ARCH (o servidor é linux/amd64; Macs Apple Silicon são arm64):
+#   docker buildx build --platform linux/amd64,linux/arm64 \
+#     -t danielmonteirodc/time-gti:<versão> -t danielmonteirodc/time-gti:latest --push .
 # Depois, atualize a tag GTI_IMAGE_TAG (ou o default abaixo) e redeploy no Coolify.
 #
 # Coolify:
