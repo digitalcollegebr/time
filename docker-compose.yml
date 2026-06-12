@@ -21,6 +21,9 @@
 services:
   time:
     image: danielmonteirodc/time-gti:${GTI_IMAGE_TAG:-3.8.0}
+    # Sempre puxa do registry no deploy — evita usar imagem local desatualizada
+    # com a mesma tag (ex.: a arm64 que ficou em cache no servidor).
+    pull_policy: always
     restart: unless-stopped
     environment:
       LEAN_DB_HOST: time_db
