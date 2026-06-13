@@ -102,7 +102,14 @@ Grupos disponíveis: `api`, `timesheet`, `login`, `ticket`, `user`
 
 ## Deploy em produção (Coolify)
 
-O deploy usa o `docker-compose.yml` deste repositório. A imagem é **construída a partir do código-fonte** (não é baixada do Docker Hub), então o whitelabel já está incluso.
+O deploy usa o `docker-compose.yml` deste repositório, que **puxa a imagem pronta** `danielmonteirodc/time` do Docker Hub. O **build sempre acontece na máquina do dev** (nunca no servidor) e a imagem é publicada multi-arch (amd64 + arm64):
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t danielmonteirodc/time:<versão> -t danielmonteirodc/time:latest --push .
+```
+
+Depois, ajuste `TIME_IMAGE_TAG` (ou o default no compose) e faça o redeploy. Para buildar do código-fonte localmente, troque `image:` pelo bloco `build:` comentado no topo do `docker-compose.yml`.
 
 A imagem usa nginx + php-fpm gerenciados pelo supervisord, exposta na porta `8080`.
 

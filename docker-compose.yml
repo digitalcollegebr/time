@@ -1,22 +1,29 @@
-# Docker Compose for deploying the "Time" whitelabel via Coolify (build-from-source).
+# Docker Compose de produção do "Time" (Coolify faz PULL da imagem pronta).
 #
-# Coolify usage:
+# O build SEMPRE acontece na máquina do dev e a imagem é publicada no Docker Hub —
+# o servidor nunca builda. Buildar MULTI-ARCH (servidor amd64; Macs Apple Silicon arm64):
+#   docker buildx build --platform linux/amd64,linux/arm64 \
+#     -t danielmonteirodc/time:<versão> -t danielmonteirodc/time:latest --push .
+# Depois, atualize TIME_IMAGE_TAG (ou o default abaixo) e redeploy no Coolify.
+#
+# Coolify:
 #   - Build Pack: "Docker Compose"
-#   - Compose file: docker-compose.yml (this file)
-#   - Set the environment variables below in Coolify's UI (Environment Variables tab).
+#   - Variáveis de ambiente OBRIGATÓRIAS (sem default):
+#       LEAN_DB_PASSWORD      Senha do banco do app
+#       MYSQL_ROOT_PASSWORD   Senha root do MySQL (openssl rand -base64 32)
+#       LEAN_APP_URL          URL pública completa (ex: https://time.seudominio.com.br)
+#       LEAN_SESSION_PASSWORD Chave de sessão (openssl rand -base64 32)
 #
-# The app image is BUILT from the Dockerfile in this repo, so your rebrand is included.
-#
-# REQUIRED environment variables (must be set in Coolify — no defaults):
-#   LEAN_DB_PASSWORD      Database password for the app user
-#   MYSQL_ROOT_PASSWORD   MySQL root password (use: openssl rand -base64 32)
-#   LEAN_APP_URL          Full public URL, e.g. https://time.seudominio.com.br
-#   LEAN_SESSION_PASSWORD Session encryption key (use: openssl rand -base64 32)
+# Para desenvolvimento local (buildar do fonte), troque `image:` pelo bloco:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
 services:
   time:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: danielmonteirodc/time:${TIME_IMAGE_TAG:-3.8.3}
+    # Sempre puxa do registry no deploy — evita usar imagem local desatualizada
+    # com a mesma tag.
+    pull_policy: always
     restart: unless-stopped
     environment:
       LEAN_DB_HOST: time_db
