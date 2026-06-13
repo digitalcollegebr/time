@@ -28,6 +28,11 @@ services:
       LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD}
       LEAN_DEFAULT_TIMEZONE: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
       TZ: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
+      # Chat de suporte com IA (Jarbas) — o widget só aparece com key + assistant configurados
+      LEAN_OPENAI_API_KEY: ${LEAN_OPENAI_API_KEY:-}
+      LEAN_SUPPORTCHAT_ASSISTANT_ID: ${LEAN_SUPPORTCHAT_ASSISTANT_ID:-}
+      LEAN_SUPPORTCHAT_ENABLED: ${LEAN_SUPPORTCHAT_ENABLED:-true}
+      LEAN_SUPPORTCHAT_SCREEN_CONTEXT: ${LEAN_SUPPORTCHAT_SCREEN_CONTEXT:-true}
     security_opt:
       - no-new-privileges:true
     cap_add:
