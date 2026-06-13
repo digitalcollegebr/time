@@ -60,7 +60,7 @@
 <div id="gtiSupportPanel" role="dialog" aria-label="Chat de suporte">
     <div class="gtiSupportHeader">
         <i class="fa-solid fa-robot"></i>
-        <strong>Jarbas<small>Suporte · {{ $supportBrand }} &amp; IA Generativa</small></strong>
+        <strong>Jarbas<small>Assistente de Projetos</small></strong>
         <button type="button" id="gtiSupportClose" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div id="gtiSupportMessages"></div>
