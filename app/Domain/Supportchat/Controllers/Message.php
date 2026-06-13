@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * POST /supportchat/message — endpoint interno do widget de suporte (Jarbas).
+ * POST /supportchat/message — endpoint interno do widget de suporte (Time Bot).
  *
  * Roda atrás do AuthCheck (somente usuários logados). O browser nunca vê a
  * chave da OpenAI: este endpoint é o único intermediário.

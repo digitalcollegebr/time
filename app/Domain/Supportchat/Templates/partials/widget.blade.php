@@ -53,14 +53,14 @@
     #gtiSupportSend:disabled { opacity: .5; cursor: wait; }
 </style>
 
-<button id="gtiSupportFab" type="button" aria-label="Abrir chat de suporte" title="Fale com o Jarbas">
+<button id="gtiSupportFab" type="button" aria-label="Abrir chat de suporte" title="Fale com o Time Bot">
     <i class="fa-solid fa-robot"></i>
 </button>
 
 <div id="gtiSupportPanel" role="dialog" aria-label="Chat de suporte">
     <div class="gtiSupportHeader">
         <i class="fa-solid fa-robot"></i>
-        <strong>Jarbas<small>Assistente de Projetos</small></strong>
+        <strong>Time Bot<small>Assistente de Projetos</small></strong>
         <button type="button" id="gtiSupportClose" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div id="gtiSupportMessages"></div>
@@ -77,7 +77,7 @@
     const messagesEl = document.getElementById('gtiSupportMessages');
     const input = document.getElementById('gtiSupportInput');
     const sendBtn = document.getElementById('gtiSupportSend');
-    const WELCOME = 'E aí! 👋 Sou o Jarbas, seu parceiro aqui no {{ $supportBrand }}. Manda tua dúvida sobre o sistema ou sobre os projetos de IA Generativa!';
+    const WELCOME = 'E aí! 👋 Sou o Time Bot, seu parceiro aqui no {{ $supportBrand }}. Manda tua dúvida sobre o sistema ou sobre os projetos de IA Generativa!';
 
     let history = [];
     try { history = JSON.parse(sessionStorage.getItem('gtiSupportHistory') || '[]'); } catch (e) { history = []; }
@@ -115,7 +115,7 @@
         history.push({ role: 'user', text: message }); persist();
 
         sendBtn.disabled = true; input.disabled = true;
-        const typing = addBubble('bot', 'Jarbas está digitando...');
+        const typing = addBubble('bot', 'Time Bot está digitando...');
         typing.classList.add('typing');
 
         try {
