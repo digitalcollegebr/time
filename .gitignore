@@ -122,6 +122,8 @@ config/.env
 
 # Local Dev Files
 .dev/docker-compose.local.yaml
+# Local compose override (build-from-source, ports, local secrets — never commit)
+/docker-compose.override.yml
 
 #codebuddy files
 .codebuddy

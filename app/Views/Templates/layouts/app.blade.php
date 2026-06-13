@@ -62,6 +62,7 @@
     @include('global::sections.pageBottom')
     @stack('scripts')
     @include('help::helpermodal')
+    @include('supportchat::partials.widget')
 </body>
 
 </html>
