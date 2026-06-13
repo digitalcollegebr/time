@@ -23,7 +23,7 @@ Fork do Leantime OSS rebranded como **Time** para uso interno da Digital College
 | Idioma padrão `pt-BR` | `app/Core/Configuration/DefaultConfig.php` |
 | Traduções pt-BR | `app/Language/pt-BR.ini` |
 | Remoção de links externos (suporte, marketplace Leantime) | Templates em `app/Domain/*/` e `app/Views/` |
-| Chat de suporte com IA (**Jarbas**, OpenAI Assistants) que lê o contexto da tela | `app/Domain/Supportchat/` |
+| Chat de suporte com IA (**Time Bot**, OpenAI Assistants) que lê o contexto da tela | `app/Domain/Supportchat/` |
 | Dockerfile multi-stage de produção | `Dockerfile` |
 | `docker-compose.yml` para deploy via Coolify | `docker-compose.yml` |
 | `LEAN_SESSION_PASSWORD` obrigatório sem default | `app/Core/Configuration/laravelConfig.php` |
@@ -154,7 +154,7 @@ Acesse o Coolify da Digital College em **https://app.digitalgenai.com.br/**
 | `LEAN_REDIS_URL` | — | URL Redis (ex: `tcp://host:6379`) |
 | `LEAN_LOG_CHANNELS` | `single` | Canais de log (`stderr` recomendado em container) |
 
-#### Chat de suporte com IA (Jarbas)
+#### Chat de suporte com IA (Time Bot)
 
 | Variável | Default | Descrição |
 |---|---|---|
@@ -163,7 +163,7 @@ Acesse o Coolify da Digital College em **https://app.digitalgenai.com.br/**
 | `LEAN_SUPPORTCHAT_ENABLED` | `true` | Liga/desliga o widget |
 | `LEAN_SUPPORTCHAT_SCREEN_CONTEXT` | `true` | Envia o conteúdo da tela atual ao assistant para respostas em contexto |
 
-> O widget só aparece quando **`LEAN_OPENAI_API_KEY` e `LEAN_SUPPORTCHAT_ASSISTANT_ID` estão definidos**. Veja a seção [Chat de suporte com IA (Jarbas)](#chat-de-suporte-com-ia-jarbas-1) para detalhes.
+> O widget só aparece quando **`LEAN_OPENAI_API_KEY` e `LEAN_SUPPORTCHAT_ASSISTANT_ID` estão definidos**. Veja a seção [Chat de suporte com IA (Time Bot)](#chat-de-suporte-com-ia-time-bot-1) para detalhes.
 
 Para a lista completa de variáveis disponíveis, consulte `config/sample.env`.
 
@@ -199,9 +199,9 @@ Se houver migrações de banco pendentes, a aplicação redirecionará automatic
 
 ---
 
-## Chat de suporte com IA (Jarbas)
+## Chat de suporte com IA (Time Bot)
 
-O **Jarbas** é um assistente de suporte integrado às telas internas (aparece só **após o login**). Ele ajuda os usuários a tirar dúvidas sobre o sistema e sobre projetos de IA Generativa, e **lê o conteúdo da tela atual** para responder em contexto ("em que tela estou?", "o que esse campo faz?", etc.).
+O **Time Bot** é um assistente de suporte integrado às telas internas (aparece só **após o login**). Ele ajuda os usuários a tirar dúvidas sobre o sistema e sobre projetos de IA Generativa, e **lê o conteúdo da tela atual** para responder em contexto ("em que tela estou?", "o que esse campo faz?", etc.).
 
 ### Como funciona
 
@@ -214,7 +214,7 @@ O **Jarbas** é um assistente de suporte integrado às telas internas (aparece s
 
 1. Crie/treine um assistant na [plataforma da OpenAI](https://platform.openai.com/assistants) e anote o `assistant_id`.
 2. Gere uma API key da OpenAI.
-3. Defina as variáveis de ambiente (ver tabela [Chat de suporte com IA (Jarbas)](#chat-de-suporte-com-ia-jarbas)):
+3. Defina as variáveis de ambiente (ver tabela [Chat de suporte com IA (Time Bot)](#chat-de-suporte-com-ia-time-bot)):
    - `LEAN_OPENAI_API_KEY`
    - `LEAN_SUPPORTCHAT_ASSISTANT_ID`
 4. (Opcional) Ajuste `LEAN_SUPPORTCHAT_ENABLED` e `LEAN_SUPPORTCHAT_SCREEN_CONTEXT`.
