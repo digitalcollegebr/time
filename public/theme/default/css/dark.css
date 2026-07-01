@@ -836,3 +836,41 @@ input[type="time"]:focus-visible {
     box-shadow: none !important;
     -webkit-box-shadow: none !important;
 }
+/* ==========================================================================
+   Digital College — marca aplicada ao tema base (magenta, navy, Montserrat)
+   Bloco no fim do arquivo: vence por ordem do cascade. Whitelabel do fork.
+   ========================================================================== */
+:root {
+    /* Paleta da marca */
+    --accent1: #ab226d;
+    --accent1-hsl: 327, 68%, 40%;
+    --accent1-hover: #8a1a57;
+    --accent1-color: #ffffff;
+    --accent1-light: rgba(171, 34, 109, 0.07);
+
+    --accent2: #1559ed;
+    --accent2-hsl: 221, 85%, 51%;
+    --accent2-hover: #1147c4;
+    --accent2-color: #ffffff;
+    --accent2-light: rgba(21, 89, 237, 0.08);
+
+    --focus-ring-color: var(--accent1);
+
+    /* Menu lateral navy (= header do site digitalcollege.com.br) */
+    --left-panel-bg: #192a3d;
+    --main-menu-link-color: rgba(255, 255, 255, 0.82);
+    --main-menu-link-hover-bg: rgba(255, 255, 255, 0.10);
+    --main-menu-link-hover-color: #ffffff;
+    --main-menu-overlayed-link-hover-bg: rgba(255, 255, 255, 0.16);
+    --main-menu-link-active-bg: rgba(255, 255, 255, 0.14);
+    --main-menu-link-active-color: #ffffff;
+    --main-menu-border-color: rgba(255, 255, 255, 0.12);
+
+    --project-selector-bg: transparent;
+    --project-selector-color: rgba(255, 255, 255, 0.92);
+    --project-selector-hover-bg: rgba(255, 255, 255, 0.10);
+    --project-selector-hover-color: #ffffff;
+
+    /* Fonte da marca (lock; !important vence o fontStyleSetter) */
+    --primary-font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+}
