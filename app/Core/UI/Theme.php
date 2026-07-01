@@ -177,6 +177,7 @@ class Theme
         'roboto' => 'Roboto',
         'atkinson' => 'Atkinson Hyperlegible',
         'shantell' => 'Shantell Sans',
+        'montserrat' => 'Montserrat',
     ];
 
     /**
@@ -186,6 +187,7 @@ class Theme
         'roboto' => 'Designed to be easy to read on a variety of devices.',
         'atkinson' => 'Atkinson was specifically developed for readers with low vision.',
         'shantell' => 'The shape of the letters and increased spacing makes words less crowded and easier to read.',
+        'montserrat' => 'Fonte da marca Digital College — geométrica e moderna.',
     ];
 
     /**
