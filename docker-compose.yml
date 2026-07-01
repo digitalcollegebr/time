@@ -20,7 +20,7 @@
 #       dockerfile: Dockerfile
 services:
   time:
-    image: danielmonteirodc/time:${TIME_IMAGE_TAG:-3.8.3}
+    image: danielmonteirodc/time:${TIME_IMAGE_TAG:-3.9.5}
     # Sempre puxa do registry no deploy — evita usar imagem local desatualizada
     # com a mesma tag.
     pull_policy: always
