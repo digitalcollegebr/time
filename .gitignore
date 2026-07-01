@@ -116,6 +116,8 @@ config/.env
 
 # Root .env used by docker compose (local secrets — never commit)
 /.env
+# Env de homologação (segredos — nunca commitar)
+/.env.homol
 
 # Documentor
 .phpdoc/cache

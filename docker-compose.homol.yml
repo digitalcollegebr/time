@@ -1,0 +1,84 @@
+# Homologação "Time" (Leantime custom) — publicada via nginx-proxy + acme-companion.
+#
+# Subir:
+#   docker compose -p leantime-homol --env-file .env.homol -f docker-compose.homol.yml up -d
+#
+# Os segredos (senhas, LEAN_SESSION_PASSWORD, keys) ficam em .env.homol (gitignored).
+# O nginx-proxy roteia por VIRTUAL_HOST e o acme-companion emite o cert Let's Encrypt.
+# Não publicamos porta no host — quem expõe 80/443 é o nginx-proxy (rede externa "webproxy").
+services:
+  time:
+    image: danielmonteirodc/time:${TIME_IMAGE_TAG:-3.9.5}
+    pull_policy: ${TIME_PULL_POLICY:-missing}
+    restart: unless-stopped
+    environment:
+      # Roteamento nginx-proxy / TLS
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-leantime.prompthouse.ia.br}
+      VIRTUAL_PORT: "8080"
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST:-leantime.prompthouse.ia.br}
+      # App
+      LEAN_DB_HOST: time_db
+      LEAN_DB_DATABASE: ${LEAN_DB_DATABASE:-leantime}
+      LEAN_DB_USER: ${LEAN_DB_USER:-leantime}
+      LEAN_DB_PASSWORD: ${LEAN_DB_PASSWORD}
+      LEAN_SITENAME: ${LEAN_SITENAME:-Time}
+      LEAN_APP_URL: ${LEAN_APP_URL}
+      LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD}
+      LEAN_DEFAULT_TIMEZONE: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
+      TZ: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
+      LEAN_OPENAI_API_KEY: ${LEAN_OPENAI_API_KEY:-}
+      LEAN_SUPPORTCHAT_ASSISTANT_ID: ${LEAN_SUPPORTCHAT_ASSISTANT_ID:-}
+      LEAN_SUPPORTCHAT_ENABLED: ${LEAN_SUPPORTCHAT_ENABLED:-true}
+      LEAN_SUPPORTCHAT_SCREEN_CONTEXT: ${LEAN_SUPPORTCHAT_SCREEN_CONTEXT:-true}
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - CAP_CHOWN
+      - CAP_SETGID
+      - CAP_SETUID
+    volumes:
+      - public_userfiles:/var/www/html/public/userfiles
+      - userfiles:/var/www/html/userfiles
+      - logs:/var/www/html/storage/logs
+    networks:
+      - webproxy
+      - internal
+    depends_on:
+      time_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  time_db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${LEAN_DB_DATABASE:-leantime}
+      MYSQL_USER: ${LEAN_DB_USER:-leantime}
+      MYSQL_PASSWORD: ${LEAN_DB_PASSWORD}
+    command: --character-set-server=UTF8MB4 --collation-server=UTF8MB4_unicode_ci
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  db_data:
+  userfiles:
+  public_userfiles:
+  logs:
+
+networks:
+  webproxy:
+    external: true
+  internal:
