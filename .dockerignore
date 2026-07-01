@@ -19,3 +19,8 @@ config/.env
 .idea
 .vscode
 .DS_Store
+# Segredos / arquivos de runtime que NÃO podem entrar na imagem
+.env.homol
+.env.*
+docker-compose.homol.yml
+.qa
