@@ -1,0 +1,19 @@
+{
+    "name": "leantime/lace",
+    "description": "Lace plugin for Leantime",
+    "version": "1.0.0",
+    "type": "leantime-plugin",
+    "license": "MIT",
+    "homepage": "https://digitalcollege.com.br",
+    "authors": [
+        {
+            "name": "Digital College",
+            "email": "daniel.monteiro@digitalcollege.com.br"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Leantime\\Plugins\\Lace\\": "/"
+        }
+    }
+}
