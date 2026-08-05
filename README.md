@@ -123,7 +123,16 @@ Acesse o Coolify da Digital College em **https://app.digitalgenai.com.br/**
 2. Crie um novo resource: **New Resource → Docker Compose**
 3. Aponte para este repositório (ou cole o conteúdo de `docker-compose.yml`)
 4. Defina as variáveis de ambiente na aba **Environment Variables** (ver seção abaixo)
-5. Salve e faça o deploy
+5. No serviço **`time`**, configure o domínio **com a porta interna**: `https://time.digitalcollege.com.br:8080`.
+   O compose não publica porta no host (usa `expose`) — quem termina TLS e roteia é o proxy do Coolify.
+   A porta no domínio diz ao proxy para onde encaminhar; ela **não** aparece na URL pública.
+6. Salve e faça o deploy
+
+> `LEAN_APP_URL` precisa bater exatamente com o domínio configurado no passo 5 (sem a porta),
+> senão links absolutos, e-mails e redirects saem com o host errado.
+>
+> As variáveis obrigatórias usam a sintaxe `${VAR:?}`: se faltar alguma, o deploy **falha na hora**
+> com a mensagem do que falta, em vez de subir a aplicação com senha vazia.
 
 ### 2. Variáveis de ambiente
 
@@ -145,21 +154,25 @@ Acesse o Coolify da Digital College em **https://app.digitalgenai.com.br/**
 | `LEAN_DB_DATABASE` | `leantime` | Nome do banco de dados |
 | `LEAN_DB_USER` | `leantime` | Usuário do banco |
 | `LEAN_SITENAME` | `Time` | Nome exibido na interface |
-| `LEAN_PORT` | `8080` | Porta exposta do container |
-| `LEAN_EMAIL_RETURN` | — | E-mail remetente (necessário para envio de e-mails) |
+| `TIME_IMAGE_TAG` | `3.9.5` | Tag da imagem `danielmonteirodc/time` a ser puxada |
+| `LEAN_DEFAULT_TIMEZONE` | `America/Fortaleza` | Timezone da aplicação e do container |
+| `LEAN_DEBUG` | `0` | Debug — manter `0` em produção |
+| `LEAN_EMAIL_RETURN` | — | E-mail remetente (**sem isto a aplicação não envia e-mail**) |
 | `LEAN_EMAIL_USE_SMTP` | `false` | Usar SMTP externo |
 | `LEAN_EMAIL_SMTP_HOSTS` | — | Host SMTP |
 | `LEAN_EMAIL_SMTP_PORT` | — | Porta SMTP |
 | `LEAN_EMAIL_SMTP_USERNAME` | — | Usuário SMTP |
 | `LEAN_EMAIL_SMTP_PASSWORD` | — | Senha SMTP |
+| `LEAN_EMAIL_SMTP_SECURE` | — | Protocolo (`TLS`, `SSL`, `STARTTLS`) |
+| `LEAN_EMAIL_SMTP_AUTH` | `true` | SMTP exige autenticação |
 | `LEAN_USE_S3` | `false` | Usar S3 para upload de arquivos |
 | `LEAN_S3_KEY` | — | Chave S3 |
 | `LEAN_S3_SECRET` | — | Secret S3 |
 | `LEAN_S3_BUCKET` | — | Bucket S3 |
 | `LEAN_S3_REGION` | — | Região S3 |
-| `LEAN_USE_REDIS` | `false` | Usar Redis para sessão/cache |
+| `LEAN_USE_REDIS` | `false` | Usar Redis para sessão/cache (Redis **externo** — esta stack não sobe um) |
 | `LEAN_REDIS_URL` | — | URL Redis (ex: `tcp://host:6379`) |
-| `LEAN_LOG_CHANNELS` | `single` | Canais de log (`stderr` recomendado em container) |
+| `LEAN_LOG_CHANNELS` | `stderr` | Canais de log. `stderr` faz o log aparecer no painel do Coolify |
 
 #### Chat de suporte com IA (Time Bot)
 

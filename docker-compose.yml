@@ -8,10 +8,16 @@
 #
 # Coolify:
 #   - Build Pack: "Docker Compose"
-#   - Variáveis de ambiente OBRIGATÓRIAS (sem default):
+#   - Domínio: configure no serviço `time` apontando para a porta 8080
+#     (ex: `https://time.digitalcollege.com.br:8080`). O Traefik do Coolify roteia
+#     para a porta EXPOSTA do container; por isso NÃO publicamos porta no host
+#     (`expose`, não `ports`) — publicar porta fura o proxy e expõe o app direto.
+#   - Variáveis de ambiente OBRIGATÓRIAS (sem default — o deploy falha se faltarem):
 #       LEAN_DB_PASSWORD      Senha do banco do app
 #       MYSQL_ROOT_PASSWORD   Senha root do MySQL (openssl rand -base64 32)
 #       LEAN_APP_URL          URL pública completa (ex: https://time.seudominio.com.br)
+#                             Precisa bater EXATAMENTE com o domínio configurado no Coolify.
+#                             Alternativa: usar a magic var do Coolify `${SERVICE_URL_TIME_8080}`.
 #       LEAN_SESSION_PASSWORD Chave de sessão (openssl rand -base64 32)
 #
 # Para desenvolvimento local (buildar do fonte), troque `image:` pelo bloco:
@@ -29,12 +35,36 @@ services:
       LEAN_DB_HOST: time_db
       LEAN_DB_DATABASE: ${LEAN_DB_DATABASE:-leantime}
       LEAN_DB_USER: ${LEAN_DB_USER:-leantime}
-      LEAN_DB_PASSWORD: ${LEAN_DB_PASSWORD}
+      LEAN_DB_PASSWORD: ${LEAN_DB_PASSWORD:?defina LEAN_DB_PASSWORD no Coolify}
       LEAN_SITENAME: ${LEAN_SITENAME:-Time}
-      LEAN_APP_URL: ${LEAN_APP_URL}
-      LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD}
+      LEAN_APP_URL: ${LEAN_APP_URL:?defina LEAN_APP_URL com a URL pública completa}
+      LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD:?defina LEAN_SESSION_PASSWORD (openssl rand -base64 32)}
       LEAN_DEFAULT_TIMEZONE: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
       TZ: ${LEAN_DEFAULT_TIMEZONE:-America/Fortaleza}
+      # Produção: debug desligado e log em stderr para o Coolify capturar
+      # (o default do app é 'single,syslog,sentry', que escreve em arquivo dentro do container).
+      LEAN_DEBUG: ${LEAN_DEBUG:-0}
+      LEAN_LOG_CHANNELS: ${LEAN_LOG_CHANNELS:-stderr}
+      # E-mail — necessário para convite de usuário e notificações.
+      # Sem LEAN_EMAIL_RETURN a aplicação não envia e-mail.
+      LEAN_EMAIL_RETURN: ${LEAN_EMAIL_RETURN:-}
+      LEAN_EMAIL_USE_SMTP: ${LEAN_EMAIL_USE_SMTP:-false}
+      LEAN_EMAIL_SMTP_HOSTS: ${LEAN_EMAIL_SMTP_HOSTS:-}
+      LEAN_EMAIL_SMTP_PORT: ${LEAN_EMAIL_SMTP_PORT:-}
+      LEAN_EMAIL_SMTP_AUTH: ${LEAN_EMAIL_SMTP_AUTH:-true}
+      LEAN_EMAIL_SMTP_USERNAME: ${LEAN_EMAIL_SMTP_USERNAME:-}
+      LEAN_EMAIL_SMTP_PASSWORD: ${LEAN_EMAIL_SMTP_PASSWORD:-}
+      LEAN_EMAIL_SMTP_SECURE: ${LEAN_EMAIL_SMTP_SECURE:-}
+      # Armazenamento de arquivos em S3 (opcional). Com false, usa os volumes locais.
+      LEAN_USE_S3: ${LEAN_USE_S3:-false}
+      LEAN_S3_KEY: ${LEAN_S3_KEY:-}
+      LEAN_S3_SECRET: ${LEAN_S3_SECRET:-}
+      LEAN_S3_BUCKET: ${LEAN_S3_BUCKET:-}
+      LEAN_S3_REGION: ${LEAN_S3_REGION:-}
+      # Redis para sessão/cache (opcional, aponta para um Redis externo —
+      # esta stack não sobe um container de Redis).
+      LEAN_USE_REDIS: ${LEAN_USE_REDIS:-false}
+      LEAN_REDIS_URL: ${LEAN_REDIS_URL:-}
       # Chat de suporte com IA (Time Bot) — o widget só aparece com key + assistant configurados
       LEAN_OPENAI_API_KEY: ${LEAN_OPENAI_API_KEY:-}
       LEAN_SUPPORTCHAT_ASSISTANT_ID: ${LEAN_SUPPORTCHAT_ASSISTANT_ID:-}
@@ -46,7 +76,10 @@ services:
       - CAP_CHOWN
       - CAP_SETGID
       - CAP_SETUID
-    ports:
+    # Sem publicação de porta no host: quem expõe 80/443 é o proxy do Coolify,
+    # que roteia para esta porta interna. Usar `ports` aqui deixaria o app
+    # acessível direto por IP:porta, fora do TLS e das regras do proxy.
+    expose:
       - "8080"
     volumes:
       - public_userfiles:/var/www/html/public/userfiles
@@ -67,18 +100,22 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD (openssl rand -base64 32)}
       MYSQL_DATABASE: ${LEAN_DB_DATABASE:-leantime}
       MYSQL_USER: ${LEAN_DB_USER:-leantime}
-      MYSQL_PASSWORD: ${LEAN_DB_PASSWORD}
+      MYSQL_PASSWORD: ${LEAN_DB_PASSWORD:?defina LEAN_DB_PASSWORD no Coolify}
     command: --character-set-server=UTF8MB4 --collation-server=UTF8MB4_unicode_ci
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      # Autenticado: sem credencial o ping retorna sucesso mesmo com o MySQL
+      # recusando login, e o app subiria antes do banco estar realmente pronto.
+      # CMD-SHELL (não CMD): a forma exec não tem shell para expandir a variável.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
 
 volumes:
   db_data:
