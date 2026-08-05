@@ -45,6 +45,8 @@ Invariants to preserve when modifying it:
 - The widget **degrades to hidden** when key + assistant aren't both configured (`isConfigured()`); it must never error or render partially.
 - Conversation state lives in browser `sessionStorage` (OpenAI thread id). **No DB persistence** — don't add a table for it without an explicit ask.
 - Guards in the service: `RUN_TIMEOUT_SECONDS`, `MAX_MESSAGE_CHARS`, `MAX_CONTEXT_CHARS`.
+- The **model is sent on the run** (`DEFAULT_MODEL = 'gpt-5-nano'`, overridable via `LEAN_SUPPORTCHAT_MODEL`), which overrides whatever the assistant is configured with. Keep it a cheap tier: screen context ships on every run and the thread accumulates history, so cost is input-dominated.
+- **The Assistants API v2 sunsets 2026-08-26.** This domain depends on `/threads` + `/runs` + the `assistants=v2` header and will break on that date; the migration target is the Responses API (threads → conversations, runs → responses).
 
 ### Upstream sync — how commits must be structured
 

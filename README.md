@@ -207,6 +207,7 @@ e ignore o serviço `time_redis`.
 | `LEAN_SUPPORTCHAT_ASSISTANT_ID` | — | ID do assistant treinado na OpenAI (ex: `asst_...`) |
 | `LEAN_SUPPORTCHAT_ENABLED` | `true` | Liga/desliga o widget |
 | `LEAN_SUPPORTCHAT_SCREEN_CONTEXT` | `true` | Envia o conteúdo da tela atual ao assistant para respostas em contexto |
+| `LEAN_SUPPORTCHAT_MODEL` | `gpt-5-nano` | Modelo usado no run. **Sobrepõe o modelo do assistant.** Deixe vazia para usar o padrão |
 
 > O widget só aparece quando **`LEAN_OPENAI_API_KEY` e `LEAN_SUPPORTCHAT_ASSISTANT_ID` estão definidos**. Veja a seção [Chat de suporte com IA (Time Bot)](#chat-de-suporte-com-ia-time-bot-1) para detalhes.
 
@@ -254,6 +255,14 @@ O **Time Bot** é um assistente de suporte integrado às telas internas (aparece
 - **Widget nativo** (botão flutuante + painel de chat) com a identidade visual do produto, incluído no layout interno (`app/Views/Templates/layouts/app.blade.php`).
 - **Proxy server-side** (`app/Domain/Supportchat/`): o browser conversa apenas com o endpoint interno autenticado `POST /supportchat/message`. A chave da OpenAI **nunca** é exposta ao cliente.
 - Usa a **OpenAI Assistants API v2**. O contexto da tela é enviado como `additional_instructions` por execução, preservando as instruções treinadas do assistant.
+- O **modelo é definido no run** (padrão `gpt-5-nano`), sobrepondo o do assistant. O tier nano é
+  proposital: o contexto da tela vai em toda execução e a thread acumula histórico, então o custo é
+  dominado por tokens de entrada. Para trocar, use `LEAN_SUPPORTCHAT_MODEL`.
+
+> ⚠️ **A Assistants API v2 será desligada em 26 de agosto de 2026.** O widget depende dela
+> (`/threads`, `/runs`, header `OpenAI-Beta: assistants=v2`) e vai parar de funcionar nessa data.
+> A migração é para a Responses API (threads → conversations, runs → responses).
+> Ver [guia de migração](https://developers.openai.com/api/docs/assistants/migration).
 - A conversa é mantida no `sessionStorage` do browser (thread da OpenAI) — **não há armazenamento em banco**.
 
 ### Configuração

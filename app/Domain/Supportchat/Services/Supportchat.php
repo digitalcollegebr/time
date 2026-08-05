@@ -22,6 +22,16 @@ class Supportchat
 
     private const MAX_CONTEXT_CHARS = 4000;
 
+    /**
+     * Modelo padrão do widget. O tier nano mantém o custo baixo, que é o que
+     * importa aqui: o contexto da tela vai em TODA execução e a thread acumula
+     * histórico, então o gasto é dominado por tokens de entrada.
+     *
+     * Enviado no run, o que sobrepõe o modelo configurado no assistant — sem
+     * isso, valeria o do dashboard da OpenAI (potencialmente um tier flagship).
+     */
+    private const DEFAULT_MODEL = 'gpt-5-nano';
+
     public function __construct(private Client $httpClient) {}
 
     /**
@@ -66,6 +76,7 @@ class Supportchat
 
         $run = $this->request('POST', "/threads/{$threadId}/runs", [
             'assistant_id' => env('LEAN_SUPPORTCHAT_ASSISTANT_ID'),
+            'model' => $this->model(),
             'additional_instructions' => $this->buildRunInstructions($screenContext),
         ]);
 
@@ -79,6 +90,19 @@ class Supportchat
         }
 
         return ['reply' => $reply, 'threadId' => $threadId];
+    }
+
+    /**
+     * Modelo usado no run: LEAN_SUPPORTCHAT_MODEL quando definida, senão o padrão.
+     *
+     * Variável vazia cai no padrão em vez de mandar string vazia para a API,
+     * que rejeitaria o run inteiro.
+     */
+    private function model(): string
+    {
+        $model = trim((string) env('LEAN_SUPPORTCHAT_MODEL', ''));
+
+        return $model !== '' ? $model : self::DEFAULT_MODEL;
     }
 
     /**

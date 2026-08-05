@@ -81,6 +81,9 @@ services:
       LEAN_SUPPORTCHAT_ASSISTANT_ID: ${LEAN_SUPPORTCHAT_ASSISTANT_ID:-}
       LEAN_SUPPORTCHAT_ENABLED: ${LEAN_SUPPORTCHAT_ENABLED:-true}
       LEAN_SUPPORTCHAT_SCREEN_CONTEXT: ${LEAN_SUPPORTCHAT_SCREEN_CONTEXT:-true}
+      # Vazia = usa o padrão do código (gpt-5-nano). O modelo vai no run e
+      # sobrepõe o configurado no assistant da OpenAI.
+      LEAN_SUPPORTCHAT_MODEL: ${LEAN_SUPPORTCHAT_MODEL:-}
     security_opt:
       - no-new-privileges:true
     cap_add:
