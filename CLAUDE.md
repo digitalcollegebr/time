@@ -4,7 +4,75 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## About Leantime
 
-Leantime is an open source project management system designed for non-project managers. It combines strategy, planning, and execution in an easy-to-use interface. The application is built with PHP (Laravel), MySQL, and a JS frontend. Current version: 3.6.2.
+Leantime is an open source project management system designed for non-project managers. It combines strategy, planning, and execution in an easy-to-use interface. The application is built with PHP (Laravel), MySQL, and a JS frontend. Current version: 3.9.5 (`app/Core/Configuration/AppSettings.php`).
+
+## THIS REPO IS A FORK — "Time" (Digital College)
+
+**Read this before touching anything.** This is not upstream Leantime. It is `digitalcollegebr/time`, a whitelabel fork of [Leantime](https://github.com/Leantime/leantime) rebranded as **Time** for Digital College internal use. Everything below the fork sections is inherited upstream architecture documentation and remains accurate.
+
+Practical consequences:
+
+- **Never re-introduce Leantime branding in user-visible text.** The product is called **Time**; the visual identity is Digital College. Code identifiers stay `leantime.*` / `Leantime\*` / `LEAN_*` / `zp_` — only *visible* strings, logos, and themes are rebranded. Do not "fix" the namespace.
+- **The default UI language is pt-BR**, not en-US (`DefaultConfig::$language = 'pt-BR'`). New user-facing strings need keys in `app/Language/pt-BR.ini`, not just `en-US.ini` — pt-BR currently trails en-US by ~100 lines, and untranslated strings leak English into the UI (see `.qa/findings.md`).
+- **Default `sitename` is `Time`** (`DefaultConfig::$sitename`), and `LEAN_SESSION_PASSWORD` has **no default** — the app throws on boot without it (`app/Core/Configuration/laravelConfig.php`). This is an intentional fork divergence; do not add a fallback.
+- **Repo docs (`README.md`, `UPSTREAM-SYNC.md`, `.qa/`) are written in Portuguese.** Match that when adding project docs; this file stays English to minimize upstream rebase conflicts.
+- README requires **PHP 8.3+**; `composer.json` still declares `^8.2` (inherited). Target 8.3.
+
+### Fork-specific customizations
+
+| What | Where |
+|---|---|
+| Name, logos, visual identity | `public/assets/images/`, `public/theme/`, `public/dist/images/logo.svg` |
+| Digital College brand theme (magenta `#ab226d`, navy `#192a3d`, Montserrat) applied to the **base `default` theme** | `public/theme/default/` (`theme.ini` name is `"Digital College"`) |
+| pt-BR default + translations | `app/Core/Configuration/DefaultConfig.php`, `app/Language/pt-BR.ini` |
+| External Leantime links removed (support, marketplace) | templates across `app/Domain/*/`, `app/Views/` |
+| **`Supportchat` domain** — "Time Bot" AI support widget (fork-only, not upstream) | `app/Domain/Supportchat/` |
+| Production multi-stage image | `Dockerfile` |
+| Coolify deploy compose (pulls prebuilt image) | `docker-compose.yml` |
+| Homologation compose behind nginx-proxy + acme | `docker-compose.homol.yml` |
+| Helm chart | `helm/` |
+| QA run log for homologation | `.qa/findings.md` |
+
+There are **43** domains, not 42: upstream's ~42 plus fork-added `Supportchat`.
+
+### Supportchat / "Time Bot" (fork-only domain)
+
+A server-side proxy to the **OpenAI Assistants API v2**, rendered as a widget in the authenticated layout (`app/Views/Templates/layouts/app.blade.php`). Three files only: `Controllers/Message.php`, `Services/Supportchat.php`, `Templates/partials/widget.blade.php`.
+
+Invariants to preserve when modifying it:
+- The **OpenAI key never reaches the browser.** The browser only ever calls the authenticated internal endpoint `POST /supportchat/message`; `LEAN_OPENAI_API_KEY` and `LEAN_SUPPORTCHAT_ASSISTANT_ID` are read server-side via `env()`.
+- Screen context is passed per-run as `additional_instructions` so the assistant's trained instructions are preserved — do not move it into the system prompt or overwrite instructions.
+- The widget **degrades to hidden** when key + assistant aren't both configured (`isConfigured()`); it must never error or render partially.
+- Conversation state lives in browser `sessionStorage` (OpenAI thread id). **No DB persistence** — don't add a table for it without an explicit ask.
+- Guards in the service: `RUN_TIMEOUT_SECONDS`, `MAX_MESSAGE_CHARS`, `MAX_CONTEXT_CHARS`.
+
+### Upstream sync — how commits must be structured
+
+Full procedure in [UPSTREAM-SYNC.md](UPSTREAM-SYNC.md). The critical constraint for anything you commit:
+
+**All fork changes are kept in a small number of commits at the top of history, on top of the `leantime-base` tag**, so upstream releases can be absorbed with `git rebase upstream/master` and the whitelabel replays cleanly on top. Sync flow: `git fetch upstream` → `git log leantime-base..upstream/master` → `git rebase upstream/master` → `git push --force-with-lease origin master` → move the `leantime-base` tag.
+
+- Prefer **few, well-scoped commits** touching fork-owned files. Do not interleave fork changes into files upstream churns heavily unless necessary — those are the recurring conflict sites.
+- The `upstream` remote is **not configured locally** by default (only `origin` exists). Add it before syncing:
+  ```bash
+  git remote add upstream https://github.com/Leantime/leantime.git
+  ```
+- Sync work happens on branches like `sync/upstream-3.9.5`; verify with a QA pass recorded in `.qa/findings.md` before merging.
+
+### Deploy topology (fork-specific)
+
+- **Images are built on a developer machine, never on the server**, and published multi-arch to Docker Hub as `danielmonteirodc/time`:
+  ```bash
+  docker buildx build --platform linux/amd64,linux/arm64 -t danielmonteirodc/time:<version> -t danielmonteirodc/time:latest --push .
+  ```
+- **Production**: `docker-compose.yml` pulls that image (tag via `TIME_IMAGE_TAG`) and is deployed through Coolify. The image runs nginx + php-fpm under supervisord on port `8080`.
+- **Homologation**: `docker-compose.homol.yml`, routed by `nginx-proxy` via `VIRTUAL_HOST` on the external `webproxy` network — no host port published:
+  ```bash
+  docker compose -p leantime-homol --env-file .env.homol -f docker-compose.homol.yml up -d
+  ```
+- **Secrets never enter git or the build context.** `/.env`, `/.env.homol` are gitignored, and `.env`, `.env.*`, `.env.homol`, `config/.env` are in `.dockerignore`. Keep it that way when editing either ignore file.
+- Persistent volumes that must survive redeploys: `db_data`, `userfiles`, `public_userfiles`, `plugins`, `logs`.
+- Local dev DB credentials in `.env` must not be changed — doing so disconnects the app from the Docker MySQL container.
 
 ## Current State & Active Migrations
 
