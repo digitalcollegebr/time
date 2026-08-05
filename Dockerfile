@@ -21,10 +21,16 @@ RUN apk add --no-cache --virtual .build-deps \
     openssl-dev libxml2-dev oniguruma-dev openldap-dev \
     zstd-dev libzip-dev freetype-dev libpng-dev libjpeg-turbo-dev postgresql-dev
 
+# phpredis instalado pela URL DIRETA do tarball, com versão fixa.
+# `pecl install redis` (sem versão) resolve a versão pelo REST do pecl.php.net, e o
+# cliente HTTP do PEAR trava nessa consulta dentro do container — o build quebrava com
+# "No releases available for package pecl.php.net/redis" mesmo com o registry saudável
+# e a rede do container OK (curl alcança REST e tarball normalmente). A URL direta não
+# passa pelo REST e ainda pina a versão, que é o que se espera de um build de produção.
 RUN set -ex; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install mysqli pdo_mysql pdo_pgsql bcmath mbstring exif pcntl opcache ldap zip gd && \
-    pecl install redis && docker-php-ext-enable redis && \
+    pecl install https://pecl.php.net/get/redis-6.3.0.tgz && docker-php-ext-enable redis && \
     rm -rf /tmp/* /var/cache/apk/*
 
 ############################

@@ -104,10 +104,22 @@ Grupos disponíveis: `api`, `timesheet`, `login`, `ticket`, `user`
 
 O deploy usa o `docker-compose.yml` deste repositório, que **puxa a imagem pronta** `danielmonteirodc/time` do Docker Hub. O **build sempre acontece na máquina do dev** (nunca no servidor) e a imagem é publicada multi-arch (amd64 + arm64):
 
+O builder padrão do Docker Desktop usa o driver `docker`, que **não faz build multi-arch**
+(`Multi-platform build is not supported for the docker driver`). Crie uma vez um builder próprio:
+
 ```bash
-docker buildx build --platform linux/amd64,linux/arm64 \
+docker buildx create --name time-builder --driver docker-container --bootstrap
+```
+
+E use ele no build:
+
+```bash
+docker buildx build --builder time-builder --platform linux/amd64,linux/arm64 \
   -t danielmonteirodc/time:<versão> -t danielmonteirodc/time:latest --push .
 ```
+
+**Convenção de tag:** as tags acompanham a versão do Leantime (`3.9.5`). Mudanças só do fork sobre a
+mesma base usam sufixo de revisão — `3.9.5-1`, `3.9.5-2` — para não sugerir um upstream que não existe.
 
 Depois, ajuste `TIME_IMAGE_TAG` (ou o default no compose) e faça o redeploy. Para buildar do código-fonte localmente, troque `image:` pelo bloco `build:` comentado no topo do `docker-compose.yml`.
 

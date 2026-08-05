@@ -1,8 +1,10 @@
 # Docker Compose de produção do "Time" (Coolify faz PULL da imagem pronta).
 #
 # O build SEMPRE acontece na máquina do dev e a imagem é publicada no Docker Hub —
-# o servidor nunca builda. Buildar MULTI-ARCH (servidor amd64; Macs Apple Silicon arm64):
-#   docker buildx build --platform linux/amd64,linux/arm64 \
+# o servidor nunca builda. Buildar MULTI-ARCH (servidor amd64; Macs Apple Silicon arm64).
+# O builder padrão do Docker Desktop (driver `docker`) NÃO faz multi-arch; crie uma vez:
+#   docker buildx create --name time-builder --driver docker-container --bootstrap
+#   docker buildx build --builder time-builder --platform linux/amd64,linux/arm64 \
 #     -t danielmonteirodc/time:<versão> -t danielmonteirodc/time:latest --push .
 # Depois, atualize TIME_IMAGE_TAG (ou o default abaixo) e redeploy no Coolify.
 #

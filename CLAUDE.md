@@ -63,10 +63,13 @@ Full procedure in [UPSTREAM-SYNC.md](UPSTREAM-SYNC.md). The critical constraint 
 
 ### Deploy topology (fork-specific)
 
-- **Images are built on a developer machine, never on the server**, and published multi-arch to Docker Hub as `danielmonteirodc/time`:
+- **Images are built on a developer machine, never on the server**, and published multi-arch to Docker Hub as `danielmonteirodc/time`. Docker Desktop's default builder uses the `docker` driver, which **cannot** build multi-arch — create a `docker-container` builder once, then pass `--builder`:
   ```bash
-  docker buildx build --platform linux/amd64,linux/arm64 -t danielmonteirodc/time:<version> -t danielmonteirodc/time:latest --push .
+  docker buildx create --name time-builder --driver docker-container --bootstrap
+  docker buildx build --builder time-builder --platform linux/amd64,linux/arm64 -t danielmonteirodc/time:<version> -t danielmonteirodc/time:latest --push .
   ```
+  Tags track the Leantime version (`3.9.5`); fork-only changes on the same base get a revision suffix (`3.9.5-1`).
+- **Do not un-pin the phpredis install in the `Dockerfile`.** `pecl install redis` (no version) resolves through pecl.php.net's REST API, and PEAR's HTTP client hangs on that call inside the build container — the build fails with `No releases available` even though the registry and container networking are fine. The direct tarball URL bypasses REST and pins the version.
 - **Production**: `docker-compose.yml` pulls that image (tag via `TIME_IMAGE_TAG`) and is deployed through Coolify. The image runs nginx + php-fpm under supervisord on port `8080`.
 - **Homologation**: `docker-compose.homol.yml`, routed by `nginx-proxy` via `VIRTUAL_HOST` on the external `webproxy` network — no host port published:
   ```bash
