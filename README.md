@@ -170,9 +170,34 @@ Acesse o Coolify da Digital College em **https://app.digitalgenai.com.br/**
 | `LEAN_S3_SECRET` | — | Secret S3 |
 | `LEAN_S3_BUCKET` | — | Bucket S3 |
 | `LEAN_S3_REGION` | — | Região S3 |
-| `LEAN_USE_REDIS` | `false` | Usar Redis para sessão/cache (Redis **externo** — esta stack não sobe um) |
-| `LEAN_REDIS_URL` | — | URL Redis (ex: `tcp://host:6379`) |
+| `LEAN_USE_REDIS` | `false` | **`true` para usar Redis** em sessão e cache. O compose já sobe o serviço `time_redis` |
+| `LEAN_REDIS_SCHEME` | `tcp` | **Não use `tls` com o Redis da stack.** O default da aplicação é `tls`; o compose força `tcp` |
+| `LEAN_REDIS_HOST` | `time_redis` | Host do Redis (nome do serviço na rede interna) |
+| `LEAN_REDIS_PORT` | `6379` | Porta do Redis |
+| `LEAN_REDIS_PASSWORD` | — | Opcional. Se definida, o `time_redis` passa a **exigir** a senha |
+| `LEAN_REDIS_DB` | `0` | Database do Redis |
+| `LEAN_REDIS_URL` | — | Só para Redis **externo** (ex: `tcp://host:6379`); sobrepõe host/porta/senha |
 | `LEAN_LOG_CHANNELS` | `stderr` | Canais de log. `stderr` faz o log aparecer no painel do Coolify |
+
+#### Redis (sessão e cache)
+
+O `docker-compose.yml` sobe o serviço **`time_redis`** junto da aplicação. Para ativar, basta
+`LEAN_USE_REDIS=true` — as demais variáveis já vêm apontadas para o serviço interno.
+
+Com a flag ligada, a aplicação troca `session.driver` e os stores de cache para Redis
+(`SessionServiceProvider` / `CacheServiceProvider`). Dois efeitos práticos:
+
+- **Ligar ou desligar a flag invalida as sessões ativas** — todos os usuários logados caem no
+  próximo acesso, porque a sessão passa a ser lida de outro lugar. Prefira fazer isso fora do horário.
+- O Redis roda com `appendonly` e volume próprio (`redis_data`) justamente porque a sessão mora nele;
+  perder o dataset desloga todo mundo. O cache, por si só, é descartável.
+
+> **Não configure `LEAN_REDIS_SCHEME=tls`** para o Redis desta stack. O default da *aplicação* é
+> `tls`, mas o Redis interno fala TCP puro — o compose já força `tcp`. Com `tls`, o host viraria
+> `tls://time_redis` e a conexão falharia.
+
+Para usar um Redis **externo** (gerenciado pelo Coolify ou de terceiros), defina `LEAN_REDIS_URL`
+e ignore o serviço `time_redis`.
 
 #### Chat de suporte com IA (Time Bot)
 
@@ -194,6 +219,7 @@ O `docker-compose.yml` define os seguintes volumes que **não são removidos em 
 | Volume | Caminho no container | Conteúdo |
 |---|---|---|
 | `db_data` | `/var/lib/mysql` | Dados do MySQL |
+| `redis_data` | `/data` | Persistência do Redis (**contém as sessões** quando `LEAN_USE_REDIS=true`) |
 | `userfiles` | `/var/www/html/userfiles` | Arquivos enviados pelos usuários |
 | `public_userfiles` | `/var/www/html/public/userfiles` | Arquivos públicos dos usuários |
 | `plugins` | `/var/www/html/app/Plugins` | Plugins instalados |

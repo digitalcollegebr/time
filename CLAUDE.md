@@ -71,7 +71,8 @@ Full procedure in [UPSTREAM-SYNC.md](UPSTREAM-SYNC.md). The critical constraint 
   docker compose -p leantime-homol --env-file .env.homol -f docker-compose.homol.yml up -d
   ```
 - **Secrets never enter git or the build context.** `/.env`, `/.env.homol` are gitignored, and `.env`, `.env.*`, `.env.homol`, `config/.env` are in `.dockerignore`. Keep it that way when editing either ignore file.
-- Persistent volumes that must survive redeploys: `db_data`, `userfiles`, `public_userfiles`, `plugins`, `logs`.
+- Persistent volumes that must survive redeploys: `db_data`, `redis_data`, `userfiles`, `public_userfiles`, `plugins`, `logs`.
+- Production ships a `time_redis` service. `LEAN_USE_REDIS=true` switches `session.driver` and the cache stores to Redis. **`redis.default.scheme` defaults to `tls` in `laravelConfig.php`** — the compose forces `tcp`, since the in-stack Redis speaks plain TCP; `tls` would prefix the host with `tls://` and fail to connect.
 - Local dev DB credentials in `.env` must not be changed — doing so disconnects the app from the Docker MySQL container.
 
 ## Current State & Active Migrations

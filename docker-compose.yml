@@ -61,9 +61,20 @@ services:
       LEAN_S3_SECRET: ${LEAN_S3_SECRET:-}
       LEAN_S3_BUCKET: ${LEAN_S3_BUCKET:-}
       LEAN_S3_REGION: ${LEAN_S3_REGION:-}
-      # Redis para sessão/cache (opcional, aponta para um Redis externo —
-      # esta stack não sobe um container de Redis).
+      # Redis para sessão e cache. Com LEAN_USE_REDIS=true o app troca
+      # session.driver e os stores de cache para redis (SessionServiceProvider /
+      # CacheServiceProvider leem a config `useRedis`).
       LEAN_USE_REDIS: ${LEAN_USE_REDIS:-false}
+      # ATENÇÃO ao scheme: o default do app é 'tls' (laravelConfig.php, redis.default.scheme).
+      # O Redis desta stack fala TCP puro dentro da rede interna, então precisa ser 'tcp'
+      # explicitamente — com 'tls' o host vira "tls://..." e a conexão falha.
+      LEAN_REDIS_SCHEME: ${LEAN_REDIS_SCHEME:-tcp}
+      LEAN_REDIS_HOST: ${LEAN_REDIS_HOST:-time_redis}
+      LEAN_REDIS_PORT: ${LEAN_REDIS_PORT:-6379}
+      LEAN_REDIS_PASSWORD: ${LEAN_REDIS_PASSWORD:-}
+      LEAN_REDIS_DB: ${LEAN_REDIS_DB:-0}
+      # Só para apontar para um Redis EXTERNO (ex: tcp://host:6379). Se preenchida,
+      # a URL sobrepõe host/porta/senha acima.
       LEAN_REDIS_URL: ${LEAN_REDIS_URL:-}
       # Chat de suporte com IA (Time Bot) — o widget só aparece com key + assistant configurados
       LEAN_OPENAI_API_KEY: ${LEAN_OPENAI_API_KEY:-}
@@ -88,6 +99,8 @@ services:
       - logs:/var/www/html/storage/logs
     depends_on:
       time_db:
+        condition: service_healthy
+      time_redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
@@ -117,8 +130,33 @@ services:
       retries: 5
       start_period: 30s
 
+  time_redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    # A sessão do usuário passa a morar aqui: perder o dataset desloga todo mundo.
+    # Por isso appendonly + volume, e não um Redis puramente em memória.
+    # A senha é opcional; quando LEAN_REDIS_PASSWORD está definida, o servidor
+    # passa a exigi-la. O $$ escapa a interpolação do compose para o shell do
+    # container avaliar — sem isso a senha nunca chegaria ao redis-server.
+    command: sh -c 'exec redis-server --appendonly yes $${REDIS_PASSWORD:+--requirepass "$$REDIS_PASSWORD"}'
+    environment:
+      REDIS_PASSWORD: ${LEAN_REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      # Autentica quando há senha, senão o ping volta NOAUTH e o serviço nunca
+      # fica healthy — o que travaria o app no depends_on.
+      test: ["CMD-SHELL", "redis-cli $${REDIS_PASSWORD:+--no-auth-warning -a \"$$REDIS_PASSWORD\"} ping | grep -q PONG"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   db_data:
+  redis_data:
   userfiles:
   public_userfiles:
   plugins:
