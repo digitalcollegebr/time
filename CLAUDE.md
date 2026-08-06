@@ -79,6 +79,13 @@ Invariants — **do not "simplify" these away, and re-apply them if an upstream 
 The blank-password and password-re-hash bugs are **upstream bugs**, dormant there only because
 nothing auto-provisions. Worth upstreaming.
 
+**Translation changes need the cache cleared to show up.** `app/Language/*.ini` is parsed once and
+stored in `Cache::store('installation')` (`languages.lang_{locale}`, file-backed under
+`storage/framework/cache`). Editing an ini and redeploying is not enough if the container is
+restarted rather than recreated — the stale strings survive. Run `php bin/leantime cache:clearAll`
+in the container after shipping translation edits, or expect to debug a "my change didn't deploy"
+ghost.
+
 **Leantime's own 2FA is off by default in this fork** (`DefaultConfig::$twofaEnabled = false`,
 env `LEAN_TWOFA_ENABLED`) — second-factor is Google Workspace's job, and stacking Leantime 2FA on
 top of SSO is redundant. Gated at the two decision points (`AuthCheck` and `Auth::use2FA()`), plus a
