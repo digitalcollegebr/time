@@ -79,6 +79,14 @@ Invariants — **do not "simplify" these away, and re-apply them if an upstream 
 The blank-password and password-re-hash bugs are **upstream bugs**, dormant there only because
 nothing auto-provisions. Worth upstreaming.
 
+**Leantime's own 2FA is off by default in this fork** (`DefaultConfig::$twofaEnabled = false`,
+env `LEAN_TWOFA_ENABLED`) — second-factor is Google Workspace's job, and stacking Leantime 2FA on
+top of SSO is redundant. Gated at the two decision points (`AuthCheck` and `Auth::use2FA()`), plus a
+server-side block in `TwoFA\Controllers\Edit` — hiding the profile link alone is not enough, since
+Frontcontroller routing keeps `/twoFA/edit` reachable by URL. `zp_user.twoFAEnabled` /
+`twoFASecret` are deliberately **not** wiped, so flipping the env back restores each user's prior
+state without re-enrolling authenticator apps.
+
 ### Upstream sync — how commits must be structured
 
 Full procedure in [UPSTREAM-SYNC.md](UPSTREAM-SYNC.md). The critical constraint for anything you commit:

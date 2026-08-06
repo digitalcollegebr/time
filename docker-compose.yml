@@ -103,6 +103,9 @@ services:
       LEAN_OIDC_ALLOWED_EMAIL_DOMAINS: ${LEAN_OIDC_ALLOWED_EMAIL_DOMAINS:-}
       LEAN_OIDC_REQUIRE_HOSTED_DOMAIN: ${LEAN_OIDC_REQUIRE_HOSTED_DOMAIN:-false}
       LEAN_OIDC_HOSTED_DOMAIN: ${LEAN_OIDC_HOSTED_DOMAIN:-}
+      # 2FA próprio do Leantime desligado: a segunda etapa é do Google Workspace.
+      # true religa, e cada usuário volta ao estado que tinha no banco.
+      LEAN_TWOFA_ENABLED: ${LEAN_TWOFA_ENABLED:-false}
     security_opt:
       - no-new-privileges:true
     cap_add:

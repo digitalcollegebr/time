@@ -28,6 +28,13 @@ class Verify extends Controller
      */
     public function get($params)
     {
+        // Com o 2FA do Leantime desligado nada mais roteia para cá, mas o endereço
+        // continua alcançável por bookmark. Sem esta saída o usuário veria um
+        // formulário morto, cujo POST cai numa página de erro 400.
+        if (! $this->authService->use2FA()) {
+            return FrontcontrollerCore::redirect(BASE_URL.'/dashboard/home');
+        }
+
         $redirectUrl = BASE_URL.'/dashboard/home';
 
         if (isset($_GET['redirect'])) {

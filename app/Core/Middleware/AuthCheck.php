@@ -99,7 +99,12 @@ class AuthCheck
                 $this->auth->shouldUse($guard);
 
                 // Check two-factor authentication
-                if (session('userdata.twoFAEnabled') && ! session('userdata.twoFAVerified')) {
+                // O interruptor global vem primeiro: com o 2FA do Leantime desligado,
+                // usuários que já tinham twoFAEnabled no banco não podem ficar presos
+                // numa verificação que a tela de configuração não deixa mais gerenciar.
+                if ($this->config->get('twofaEnabled', false)
+                    && session('userdata.twoFAEnabled')
+                    && ! session('userdata.twoFAVerified')) {
                     $response = $this->redirectWithOrigin('twoFA.verify', $_GET['redirect'] ?? '', $request) ?: $next($request);
                 } else {
                     $authenticated = true;

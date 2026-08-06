@@ -2,7 +2,9 @@
 
 namespace Leantime\Domain\TwoFA\Controllers;
 
+use Leantime\Core\Configuration\Environment;
 use Leantime\Core\Controller\Controller;
+use Leantime\Core\Controller\Frontcontroller;
 use Leantime\Domain\TwoFA\Services\TwoFA as TwoFAService;
 use RobThree\Auth\TwoFactorAuthException;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,12 +13,35 @@ class Edit extends Controller
 {
     private TwoFAService $twoFAService;
 
+    private Environment $environment;
+
     /**
      * Initializes dependencies.
      */
-    public function init(TwoFAService $twoFAService): void
+    public function init(TwoFAService $twoFAService, Environment $environment): void
     {
         $this->twoFAService = $twoFAService;
+        $this->environment = $environment;
+    }
+
+    /**
+     * Bloqueia a tela quando o 2FA do Leantime está desligado globalmente.
+     *
+     * Feito no servidor, e não só escondendo o link no perfil: o roteamento é por
+     * convenção de URL, então /twoFA/edit continua acessível a quem digitar o
+     * endereço. Sem esta guarda, um POST direto ainda ativaria 2FA para a conta —
+     * e o usuário ficaria com um segundo fator que o gate de login ignora e que a
+     * interface não oferece como desativar.
+     */
+    private function featureDisabledResponse(): ?Response
+    {
+        if ($this->environment->get('twofaEnabled', false)) {
+            return null;
+        }
+
+        $this->tpl->setNotification($this->language->__('notification.twoFA_disabled_globally'), 'info');
+
+        return Frontcontroller::redirect(BASE_URL.'/users/editOwn');
     }
 
     /**
@@ -28,6 +53,10 @@ class Edit extends Controller
      */
     public function get(array $params): Response
     {
+        if ($blocked = $this->featureDisabledResponse()) {
+            return $blocked;
+        }
+
         $this->assignSetupData();
         $this->generateFormTokens();
 
@@ -43,6 +72,10 @@ class Edit extends Controller
      */
     public function post(array $params): Response
     {
+        if ($blocked = $this->featureDisabledResponse()) {
+            return $blocked;
+        }
+
         $userId = (int) session('userdata.id');
 
         if (isset($_POST['disable'])) {

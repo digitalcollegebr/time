@@ -43,7 +43,9 @@
                     <th class='head1'>{!! __('label.client') !!}</th>
                     <th class='head1'>{!! __('label.role') !!}</th>
                     <th class='head1'>{!! __('label.status') !!}</th>
-                    <th class='head1'>{!! __('headlines.twoFA') !!}</th>
+                    @if (config('twofaEnabled', false))
+                        <th class='head1'>{!! __('headlines.twoFA') !!}</th>
+                    @endif
                     <th class='head0 no-sort'></th>
                 </tr>
             </thead>
@@ -63,11 +65,13 @@
                         @else
                             {!! __('label.deactivated') !!}
                         @endif</td>
-                        <td>@if ($row['twoFAEnabled'])
-                            {!! __('label.yes') !!}
-                        @else
-                            {!! __('label.no') !!}
-                        @endif</td>
+                        @if (config('twofaEnabled', false))
+                            <td>@if ($row['twoFAEnabled'])
+                                {!! __('label.yes') !!}
+                            @else
+                                {!! __('label.no') !!}
+                            @endif</td>
+                        @endif
                         <td>@can('users.delete')<a href="{{ BASE_URL }}/users/delUser/{{ $row['id'] }}" class="delete"><i class="fa fa-trash"></i> {!! __('links.delete') !!}</a>@endcan</td>
                     </tr>
             @endforeach

@@ -189,15 +189,17 @@
                             @endif
                         </form>
                         <br /><br />
-                        <h4 class="widgettitle title-light">
-                            <i class="fa-solid fa-shield-halved"></i> {{ __('headlines.twoFA') }}
-                        </h4>
-                        @if ($values['twoFAEnabled'] )
-                            <p>{!!   __('text.twoFA_enabled') !!}</p>
-                        @else
-                            <p>{!! __('text.twoFA_disabled')  !!}</p>
+                        @if (config('twofaEnabled', false))
+                            <h4 class="widgettitle title-light">
+                                <i class="fa-solid fa-shield-halved"></i> {{ __('headlines.twoFA') }}
+                            </h4>
+                            @if ($values['twoFAEnabled'] )
+                                <p>{!!   __('text.twoFA_enabled') !!}</p>
+                            @else
+                                <p>{!! __('text.twoFA_disabled')  !!}</p>
+                            @endif
+                            <p><a href="{{ BASE_URL }}/twoFA/edit">{!! __('text.twoFA_manage') !!}</a></p>
                         @endif
-                        <p><a href="{{ BASE_URL }}/twoFA/edit">{!! __('text.twoFA_manage') !!}</a></p>
                     </div>
 
                     <div id="settings">

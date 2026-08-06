@@ -645,8 +645,19 @@ class Auth implements Authenticatable
         return session('userdata.id');
     }
 
+    /**
+     * O 2FA próprio do Leantime só vale quando o interruptor global está ligado.
+     *
+     * Gate central: quem consome isto é o redirect pós-login por senha e o
+     * controller de verificação. Com o interruptor desligado, ambos ignoram o
+     * twoFAEnabled gravado no usuário, sem apagá-lo.
+     */
     public function use2FA(): mixed
     {
+        if (! $this->config->get('twofaEnabled', false)) {
+            return false;
+        }
+
         return session('userdata.twoFAEnabled');
     }
 

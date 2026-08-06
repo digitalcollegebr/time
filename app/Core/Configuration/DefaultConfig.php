@@ -117,6 +117,23 @@ class DefaultConfig
      */
     public bool $disableLoginForm = false;
 
+    /**
+     * Interruptor global do 2FA próprio do Leantime.
+     *
+     * DIVERGÊNCIA INTENCIONAL DO FORK: aqui o padrão é `false`, enquanto no upstream
+     * o 2FA é sempre disponível. A segunda etapa fica a cargo do Google Workspace, e
+     * cobrar um segundo fator do Leantime por cima seria redundante para quem entra
+     * por SSO.
+     *
+     * Com `false`: o gate de verificação não dispara, a tela de configuração fica
+     * bloqueada e o ponto de entrada some do perfil. Os valores em zp_user são
+     * preservados — religar via LEAN_TWOFA_ENABLED=true restaura o estado anterior
+     * de cada usuário, sem ninguém precisar reconfigurar o aplicativo autenticador.
+     *
+     * @var bool Enable Leantime's own two-factor authentication
+     */
+    public bool $twofaEnabled = false;
+
     // Database ====================================================================================
     /**
      * @var string Database host

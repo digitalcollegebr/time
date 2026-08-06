@@ -227,6 +227,7 @@ usuário automaticamente no primeiro acesso — e **ninguém de fora do domínio
 | `LEAN_OIDC_ALLOWED_EMAIL_DOMAINS` | — | **Domínios autorizados**, separados por vírgula |
 | `LEAN_OIDC_REQUIRE_HOSTED_DOMAIN` | `false` | `true` exige a claim `hd` do Google |
 | `LEAN_OIDC_HOSTED_DOMAIN` | — | Filtra o seletor de contas do Google (só UX) |
+| `LEAN_TWOFA_ENABLED` | `false` | 2FA próprio do Leantime. **Desligado neste fork** — ver abaixo |
 
 **No Google Cloud:** tela de consentimento **Internal**, credencial **OAuth client ID → Web
 application**, e o redirect URI registrado exatamente como `https://<host>/oidc/callback` — o código
@@ -246,6 +247,19 @@ OAuth for mal configurado ou o secret expirar. O primeiro login via Google em pr
 o da conta owner.
 
 Sincronização de papel **não existe**: grupo do Google não define papel no Time. Promover é manual.
+
+**Verificação em duas etapas** fica a cargo do Google Workspace. O 2FA próprio do Leantime vem
+**desligado** neste fork (`LEAN_TWOFA_ENABLED=false`), porque cobrar um segundo fator por cima do
+SSO é redundante — e quem já o tinha ativo ficaria preso numa verificação que a interface não
+oferece mais como desativar.
+
+Com o interruptor desligado: o gate de verificação não dispara, `/twoFA/edit` é bloqueado no
+servidor (não só escondido) e a seção some do perfil. **Os valores em `zp_user` são preservados** —
+`LEAN_TWOFA_ENABLED=true` restaura o estado anterior de cada usuário, sem ninguém precisar
+reconfigurar o aplicativo autenticador.
+
+> Como o formulário de senha segue habilitado como break-glass, e o 2FA do Leantime era o único
+> segundo fator desse caminho, use senha forte na conta owner.
 
 #### Chat de suporte com IA (Time Bot)
 
