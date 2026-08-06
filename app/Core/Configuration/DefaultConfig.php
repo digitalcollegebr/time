@@ -494,6 +494,32 @@ class DefaultConfig
      */
     public string $oidcFieldDepartment = '';
 
+    /**
+     * Domínios de e-mail autorizados a entrar via OIDC, separados por vírgula.
+     *
+     * Vazio mantém o comportamento do upstream (sem restrição). Vazio COM
+     * oidcCreateUser ligado nega todos os logins, de propósito: essa combinação
+     * provisionaria conta para qualquer identidade que o provedor autenticasse.
+     *
+     * @var string Comma separated list of email domains allowed to sign in via OIDC
+     */
+    public string $oidcAllowedEmailDomains = '';
+
+    /**
+     * Exige que a claim `hd` (hosted domain) esteja na lista de domínios permitidos.
+     *
+     * Mais forte que checar o sufixo do e-mail: uma conta de consumidor pode ser
+     * registrada com endereço de um domínio corporativo, mas não carrega `hd`.
+     *
+     * @var bool Require the hosted domain claim to match the allowed domains
+     */
+    public bool $oidcRequireHostedDomain = false;
+
+    /**
+     * @var string Value sent as the `hd` parameter on the authorization URL (UX hint only)
+     */
+    public string $oidcHostedDomain = '';
+
     // Redis Settings ===============================================================================
     /**
      * @var bool Set to true if you want to use Redis

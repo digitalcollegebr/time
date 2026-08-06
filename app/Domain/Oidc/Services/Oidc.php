@@ -69,18 +69,24 @@ class Oidc
 
     private string $fieldDepartment;
 
+    private string $hostedDomain;
+
     private Language $language;
+
+    private OidcAccessPolicy $accessPolicy;
 
     public function __construct(
         Environment $config,
         Language $language,
         AuthService $authService,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        OidcAccessPolicy $accessPolicy
     ) {
         $this->config = $config;
         $this->authService = $authService;
         $this->userRepo = $userRepo;
         $this->language = $language;
+        $this->accessPolicy = $accessPolicy;
 
         $providerUrl = $this->config->get('oidcProviderUrl');
 
@@ -105,6 +111,7 @@ class Oidc
         $this->fieldJobtitle = $this->config->get('oidcFieldJobtitle', '');
         $this->fieldJoblevel = $this->config->get('oidcFieldJoblevel', '');
         $this->fieldDepartment = $this->config->get('oidcFieldDepartment', '');
+        $this->hostedDomain = $this->config->get('oidcHostedDomain', '');
     }
 
     private function trimTrailingSlash(string $str): string
@@ -126,13 +133,23 @@ class Oidc
 
         if ($this->getAuthUrl()) {
 
-            return $this->getAuthUrl().'?'.http_build_query([
+            $query = [
                 'client_id' => $this->clientId,
                 'redirect_uri' => $this->buildRedirectUrl(),
                 'response_type' => 'code',
                 'scope' => $this->scopes,
                 'state' => $this->generateState(),
-            ]);
+            ];
+
+            // Dica de UX apenas: faz o Google já filtrar o seletor de contas pelo
+            // domínio. NUNCA é controle de segurança — o parâmetro viaja numa URL
+            // no navegador do próprio usuário, portanto é manipulável. Quem barra
+            // de verdade é a checagem da claim `hd` em OidcAccessPolicy.
+            if ($this->hostedDomain !== '') {
+                $query['hd'] = $this->hostedDomain;
+            }
+
+            return $this->getAuthUrl().'?'.http_build_query($query);
         }
 
         return false;
@@ -206,9 +223,31 @@ class Oidc
             $this->displayError('oidc.error.emailUnavailable');
         }
 
+        // Normaliza a caixa antes de qualquer lookup: o provedor pode devolver
+        // Nome.Sobrenome@Dominio, e sob collation sensível a maiúsculas isso viraria
+        // uma segunda conta para a mesma pessoa.
+        $userName = mb_strtolower(trim($userName));
+
+        // Portão de autorização. Fica ANTES do lookup de propósito: no ramo de
+        // atualização, uma identidade fora do domínio cujo e-mail coincidisse com um
+        // username existente entraria por ele. Aqui, nenhuma linha de zp_user é
+        // criada nem alterada para quem a política recusa.
+        try {
+            $this->accessPolicy->assertAllowed($userInfo, $userName);
+        } catch (OidcAccessDeniedException $e) {
+            $this->displayError($e->getTranslationKey());
+        }
+
         $user = $this->userRepo->getUserByEmail($userName);
 
         if ($user === false) {
+            // getUserByEmail só enxerga usuário ativo. Sem esta checagem, uma conta
+            // desativada cairia no ramo de criação e estouraria o índice único de
+            // username — hoje isso vaza o SQL cru para a tela de login.
+            if ($this->userRepo->usernameExist($userName)) {
+                $this->displayError('oidc.error.userInactive');
+            }
+
             if ($this->createUser) {
                 // create user if it doesn't exist yet
                 $userArray = [
@@ -248,13 +287,19 @@ class Oidc
 
             $user['role'] = $this->getUserRole($userInfo, $user);
 
+            // getUserByEmail devolveu a linha inteira, hash de senha incluído.
+            // Repassá-lo a editUser faria o hash ser hasheado outra vez e a senha
+            // local do usuário pararia de funcionar — justamente o break-glass de
+            // quem administra o sistema.
+            unset($user['password']);
+
             $this->userRepo->editUser($user, $user['id']);
 
             // Get updated user
             $user = $this->userRepo->getUserByEmail($userName);
         }
 
-        $this->authService->setUserSession($user, false);
+        $this->authService->setUserSession($user, true);
 
         return Frontcontroller::redirect(BASE_URL.'/dashboard/home');
     }
@@ -269,7 +314,9 @@ class Oidc
      */
     private function requestTokens(string $code): array|string
     {
-        $httpClient = Http::withoutVerifying();
+        // Verificação TLS ligada: esta requisição carrega o client_secret, e é o
+        // canal por onde chega o token que autentica o usuário.
+        $httpClient = Http::timeout(20);
 
         // Add proper client authentication headers
         $response = $httpClient->asForm()->post($this->getTokenUrl(), [
@@ -330,6 +377,25 @@ class Oidc
             $this->displayError('oidc.error.providerMismatch', $tokenData['iss'], $this->providerUrl);
         }
 
+        // O token precisa ter sido emitido PARA esta aplicação, não apenas por este
+        // provedor. Hoje o token só chega por backchannel autenticado com o nosso
+        // client_secret, então isto é seguro barato — mas passa a ser essencial no
+        // momento em que confiamos em claims do token para autorizar (ex.: `hd`).
+        $audiences = (array) ($tokenData['aud'] ?? []);
+
+        if (! in_array($this->clientId, $audiences, true)) {
+            $this->displayError('oidc.error.audienceMismatch');
+        }
+
+        if (isset($tokenData['azp']) && $tokenData['azp'] !== $this->clientId) {
+            $this->displayError('oidc.error.audienceMismatch');
+        }
+
+        // 60s de folga para diferença de relógio entre nós e o provedor.
+        if (! isset($tokenData['exp']) || time() >= ((int) $tokenData['exp']) + 60) {
+            $this->displayError('oidc.error.tokenExpired');
+        }
+
         $headerData = json_decode($this->decodeBase64Url($header), true);
 
         if (! isset($headerData['kid'])) {
@@ -378,7 +444,10 @@ class Oidc
             return openssl_pkey_get_public(file_get_contents($this->certificateFile));
         }
 
-        $httpClient = Http::withoutVerifying();
+        // Verificação TLS ligada: com ela desligada, quem tivesse posição de rede
+        // serviria um JWKS forjado e assinaria o próprio ID token — o que anularia
+        // inclusive a checagem de domínio, já que passaria a controlar as claims.
+        $httpClient = Http::timeout(20);
         // AUTH HEADER?
         $response = $httpClient->get($this->getJwksUrl()); // https://cloud.lukas-sieper.de/apps/oidc/jwks
         $keys = json_decode($response->getBody()->getContents(), true);
@@ -477,7 +546,9 @@ class Oidc
             return true;
         }
 
-        $httpClient = Http::withoutVerifying();
+        // Verificação TLS ligada: o discovery é quem diz onde ficam os endpoints de
+        // token e JWKS, então forjá-lo redireciona todo o fluxo.
+        $httpClient = Http::timeout(20);
         try {
             // $uri = strlen() ? $this->autoDiscoverUrl : $this->providerUrl;
             $uri = empty($this->autoDiscoverUrl) ? $this->providerUrl : $this->autoDiscoverUrl;
@@ -551,13 +622,32 @@ class Oidc
      */
     private function generateState(): string
     {
-        return bin2hex(random_bytes(16));
+        $state = bin2hex(random_bytes(16));
+
+        session(['oidc.state' => $state]);
+
+        return $state;
     }
 
+    /**
+     * Confere o state devolvido pelo provedor contra o que guardamos na sessão.
+     *
+     * Sem esta verificação o callback aceita qualquer `code`: um atacante inicia
+     * um login com a própria conta, captura o code e induz a vítima a abrir
+     * /oidc/callback?code=… — o navegador da vítima termina autenticado na conta
+     * do atacante, e todo trabalho que ela fizer ali cai na conta dele.
+     */
     private function verifyState(string $state): bool
     {
-        // TODO
-        return true;
+        $expected = session('oidc.state');
+
+        // Uso único: consumido mesmo quando a comparação falha, para não deixar
+        // um state válido pendurado na sessão.
+        session()->forget('oidc.state');
+
+        return is_string($expected)
+            && $expected !== ''
+            && hash_equals($expected, $state);
     }
 
     private function encodeBase64Url(string $value): string
@@ -576,6 +666,6 @@ class Oidc
     private function displayError(string $translationKey, string ...$values): void
     {
 
-        throw new \RuntimeException(sprintf($this->language->__($translationKey), ...$values));
+        throw new OidcUserMessageException(sprintf($this->language->__($translationKey), ...$values));
     }
 }

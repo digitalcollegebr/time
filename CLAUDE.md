@@ -48,6 +48,37 @@ Invariants to preserve when modifying it:
 - The **model is sent on the run** (`DEFAULT_MODEL = 'gpt-5-nano'`, overridable via `LEAN_SUPPORTCHAT_MODEL`), which overrides whatever the assistant is configured with. Keep it a cheap tier: screen context ships on every run and the thread accumulates history, so cost is input-dominated.
 - **The Assistants API v2 sunsets 2026-08-26.** This domain depends on `/threads` + `/runs` + the `assistants=v2` header and will break on that date; the migration target is the Responses API (threads → conversations, runs → responses).
 
+### Google Workspace SSO (fork-added authorization on top of upstream OIDC)
+
+The native `app/Domain/Oidc/` flow is pointed at Google. Upstream OIDC has **no identity
+authorization of any kind** — the fork adds it in `Services/OidcAccessPolicy.php` (fork-owned, so it
+stays out of rebase conflicts). Configured via `LEAN_OIDC_ALLOWED_EMAIL_DOMAINS`,
+`LEAN_OIDC_REQUIRE_HOSTED_DOMAIN`, `LEAN_OIDC_HOSTED_DOMAIN`.
+
+Invariants — **do not "simplify" these away, and re-apply them if an upstream rebase drops them:**
+
+- **Domain match is exact, never a suffix.** `str_ends_with($email, 'digitalcollege.com.br')` accepts
+  `x@fakedigitalcollege.com.br`. Compare the part after `@` with `in_array(..., true)`.
+- **Empty allowlist + `oidcCreateUser=true` denies every login.** That combination would provision an
+  account for any identity the provider authenticates; the policy makes it unreachable rather than
+  trusting operators not to hit it.
+- **`assertAllowed()` runs before the user lookup** in `Oidc::login()`, so a rejected identity neither
+  creates nor updates a `zp_user` row — the update branch is reachable by a foreign account whose
+  email collides with an existing username.
+- **`addUser()` must never store `password_hash('')`.** `password_verify('', $hash)` returns **true**,
+  so an SSO-provisioned account would authenticate via `POST /auth/login` with a blank password,
+  bypassing the IdP entirely. `Users::hashNewPassword()` substitutes a random sentinel, and
+  `Auth\Repositories\Auth::getUserByLogin()` rejects empty passwords outright. Both are required.
+- **Never pass a user row straight back into `editUser()`.** The row carries the bcrypt hash and the
+  repository re-hashes non-empty passwords, permanently destroying the user's password — including
+  the owner's break-glass. `Oidc::login()` unsets it and `Users::looksLikePasswordHash()` backstops it.
+- `verifyState()` is a real check now (upstream ships a `return true;` stub); TLS verification is on
+  for the token/JWKS/discovery calls (upstream uses `Http::withoutVerifying()`); `aud`/`azp`/`exp` are
+  validated on the ID token.
+
+The blank-password and password-re-hash bugs are **upstream bugs**, dormant there only because
+nothing auto-provisions. Worth upstreaming.
+
 ### Upstream sync — how commits must be structured
 
 Full procedure in [UPSTREAM-SYNC.md](UPSTREAM-SYNC.md). The critical constraint for anything you commit:

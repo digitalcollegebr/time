@@ -127,6 +127,13 @@ class Auth
      */
     public function getUserByLogin(string $username, string $password): array|false
     {
+        // Senha vazia nunca autentica. Sem esta guarda, uma conta cujo hash tenha
+        // sido gerado a partir de string vazia (password_verify('', $hash) é true)
+        // entraria com POST /auth/login sem senha nenhuma.
+        if ($password === '') {
+            return false;
+        }
+
         $user = $this->userRepo->getUserByEmail($username);
 
         if ($user !== false && password_verify($password, $user['password'])) {

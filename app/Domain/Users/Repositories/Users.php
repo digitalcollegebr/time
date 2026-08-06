@@ -4,6 +4,7 @@ namespace Leantime\Domain\Users\Repositories;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Support\Facades\Log;
 use Leantime\Core\Configuration\Environment;
 use Leantime\Core\Db\DatabaseHelper;
 use Leantime\Core\Db\Db as DbCore;
@@ -302,7 +303,11 @@ class Users
         ];
 
         if (isset($values['password']) && $values['password'] != '') {
-            $updateData['password'] = password_hash($values['password'], PASSWORD_DEFAULT);
+            if ($this->looksLikePasswordHash((string) $values['password'])) {
+                Log::warning('Senha recebida já era um hash; ignorada para não invalidar o acesso do usuário.');
+            } else {
+                $updateData['password'] = password_hash($values['password'], PASSWORD_DEFAULT);
+            }
         }
 
         return $this->connection->table('zp_user')
@@ -359,12 +364,47 @@ class Users
         ];
 
         if (isset($values['password']) && $values['password'] != '') {
-            $updateData['password'] = password_hash($values['password'], PASSWORD_DEFAULT);
+            if ($this->looksLikePasswordHash((string) $values['password'])) {
+                Log::warning('Senha recebida já era um hash; ignorada para não invalidar o acesso do usuário.');
+            } else {
+                $updateData['password'] = password_hash($values['password'], PASSWORD_DEFAULT);
+            }
         }
 
         $this->connection->table('zp_user')
             ->where('id', $id)
             ->update($updateData);
+    }
+
+    /**
+     * Gera o hash de uma senha nova, tratando "sem senha local" com sentinela.
+     *
+     * password_hash('') produz um hash VÁLIDO, e password_verify('', $hash)
+     * devolve true. Contas criadas sem senha — provisionadas por SSO, por
+     * exemplo — passariam a autenticar com senha em branco em POST /auth/login,
+     * contornando o provedor de identidade por completo. Gravar o hash de um
+     * segredo aleatório torna a conta inatingível por senha, que é a intenção.
+     */
+    /**
+     * Detecta um valor que já é hash bcrypt em vez de senha em texto claro.
+     *
+     * As leituras de usuário devolvem a linha inteira, hash incluído, então é
+     * natural um chamador editar esse array e devolvê-lo para gravação. Hasheando
+     * o hash, a senha real do usuário para de funcionar — silenciosamente, sem
+     * volta, e re-hasheando a cada gravação seguinte.
+     */
+    private function looksLikePasswordHash(string $value): bool
+    {
+        return preg_match('/^\$2[aby]\$\d{2}\$/', $value) === 1;
+    }
+
+    private function hashNewPassword(string $password): string
+    {
+        if ($password === '') {
+            return password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);
+        }
+
+        return password_hash($password, PASSWORD_DEFAULT);
     }
 
     /**
@@ -380,7 +420,7 @@ class Users
             'role' => $values['role'],
             'notifications' => 1,
             'clientId' => $values['clientId'] ?? '',
-            'password' => password_hash($values['password'], PASSWORD_DEFAULT),
+            'password' => $this->hashNewPassword((string) $values['password']),
             'source' => $values['source'] ?? '',
             'pwReset' => $values['pwReset'] ?? '',
             'status' => $values['status'] ?? '',

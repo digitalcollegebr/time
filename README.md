@@ -211,6 +211,42 @@ Com a flag ligada, a aplicação troca `session.driver` e os stores de cache par
 Para usar um Redis **externo** (gerenciado pelo Coolify ou de terceiros), defina `LEAN_REDIS_URL`
 e ignore o serviço `time_redis`.
 
+#### Login com Google Workspace (SSO)
+
+Permite que qualquer pessoa com e-mail do domínio corporativo entre com a conta Google, ganhando
+usuário automaticamente no primeiro acesso — e **ninguém de fora do domínio**.
+
+| Variável | Default | Descrição |
+|---|---|---|
+| `LEAN_OIDC_ENABLE` | `false` | `true` mostra o botão "Entrar com Google" e habilita as rotas |
+| `LEAN_OIDC_PROVIDER_URL` | — | `https://accounts.google.com` (endpoints vêm por discovery) |
+| `LEAN_OIDC_CLIENT_ID` | — | Client ID do OAuth client (um por ambiente) |
+| `LEAN_OIDC_CLIENT_SECRET` | — | Secret do OAuth client |
+| `LEAN_OIDC_CREATE_USER` | `false` | `true` cria o usuário no primeiro login |
+| `LEAN_OIDC_DEFAULT_ROLE` | `20` | Papel dos criados automaticamente (20 = editor) |
+| `LEAN_OIDC_ALLOWED_EMAIL_DOMAINS` | — | **Domínios autorizados**, separados por vírgula |
+| `LEAN_OIDC_REQUIRE_HOSTED_DOMAIN` | `false` | `true` exige a claim `hd` do Google |
+| `LEAN_OIDC_HOSTED_DOMAIN` | — | Filtra o seletor de contas do Google (só UX) |
+
+**No Google Cloud:** tela de consentimento **Internal**, credencial **OAuth client ID → Web
+application**, e o redirect URI registrado exatamente como `https://<host>/oidc/callback` — o código
+o deriva de `LEAN_APP_URL` e não é configurável. Use **clients separados** para produção e homologação.
+
+> **`LEAN_OIDC_ALLOWED_EMAIL_DOMAINS` é obrigatória quando `LEAN_OIDC_CREATE_USER=true`.** Vazia, a
+> aplicação nega todos os logins de propósito: sem allowlist, o auto-provisionamento criaria conta
+> para qualquer conta Google do mundo, inclusive `@gmail.com`.
+
+O domínio é comparado de forma **exata**, nunca por sufixo — `@fakedigitalcollege.com.br` não é
+aceito como `@digitalcollege.com.br`. Com `LEAN_OIDC_REQUIRE_HOSTED_DOMAIN=true`, também é exigida a
+claim `hd`, que é o que prende o login ao Workspace gerenciado: uma conta Google **de consumidor**
+pode ser registrada com endereço do domínio corporativo, mas não carrega `hd`.
+
+**Mantenha o login por senha habilitado durante o rollout.** É o único caminho de volta se o client
+OAuth for mal configurado ou o secret expirar. O primeiro login via Google em produção não deve ser
+o da conta owner.
+
+Sincronização de papel **não existe**: grupo do Google não define papel no Time. Promover é manual.
+
 #### Chat de suporte com IA (Time Bot)
 
 | Variável | Default | Descrição |

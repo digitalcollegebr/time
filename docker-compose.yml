@@ -86,6 +86,23 @@ services:
       # Vazia = usa o padrão do código (gpt-5-nano). O modelo vai no run e
       # sobrepõe o configurado no assistant da OpenAI.
       LEAN_SUPPORTCHAT_MODEL: ${LEAN_SUPPORTCHAT_MODEL:-}
+      # Login com Google Workspace (OIDC). Com ENABLE=false o login atual segue igual.
+      # ALLOWED_EMAIL_DOMAINS é obrigatória quando CREATE_USER=true: vazia, a aplicação
+      # nega todos os logins de propósito, em vez de provisionar conta para qualquer
+      # identidade que o Google autenticar.
+      LEAN_OIDC_ENABLE: ${LEAN_OIDC_ENABLE:-false}
+      LEAN_OIDC_PROVIDER_URL: ${LEAN_OIDC_PROVIDER_URL:-}
+      LEAN_OIDC_CLIENT_ID: ${LEAN_OIDC_CLIENT_ID:-}
+      LEAN_OIDC_CLIENT_SECRET: ${LEAN_OIDC_CLIENT_SECRET:-}
+      LEAN_OIDC_SCOPES: ${LEAN_OIDC_SCOPES:-openid profile email}
+      LEAN_OIDC_CREATE_USER: ${LEAN_OIDC_CREATE_USER:-false}
+      LEAN_OIDC_DEFAULT_ROLE: ${LEAN_OIDC_DEFAULT_ROLE:-20}
+      LEAN_OIDC_FIELD_EMAIL: ${LEAN_OIDC_FIELD_EMAIL:-email}
+      LEAN_OIDC_FIELD_FIRSTNAME: ${LEAN_OIDC_FIELD_FIRSTNAME:-given_name}
+      LEAN_OIDC_FIELD_LASTNAME: ${LEAN_OIDC_FIELD_LASTNAME:-family_name}
+      LEAN_OIDC_ALLOWED_EMAIL_DOMAINS: ${LEAN_OIDC_ALLOWED_EMAIL_DOMAINS:-}
+      LEAN_OIDC_REQUIRE_HOSTED_DOMAIN: ${LEAN_OIDC_REQUIRE_HOSTED_DOMAIN:-false}
+      LEAN_OIDC_HOSTED_DOMAIN: ${LEAN_OIDC_HOSTED_DOMAIN:-}
     security_opt:
       - no-new-privileges:true
     cap_add:
