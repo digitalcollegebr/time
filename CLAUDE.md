@@ -8,6 +8,10 @@ Leantime is an open source project management system designed for non-project ma
 
 ## THIS REPO IS A FORK — "Time" (Digital College)
 
+> **Picking up work on a new machine?** [HANDOFF.md](HANDOFF.md) has the current deployment state,
+> what is live vs. pending, and the open items with dates. This file has the durable architecture;
+> HANDOFF has the perishable state.
+
 **Read this before touching anything.** This is not upstream Leantime. It is `digitalcollegebr/time`, a whitelabel fork of [Leantime](https://github.com/Leantime/leantime) rebranded as **Time** for Digital College internal use. Everything below the fork sections is inherited upstream architecture documentation and remains accurate.
 
 Practical consequences:
@@ -93,6 +97,42 @@ server-side block in `TwoFA\Controllers\Edit` — hiding the profile link alone 
 Frontcontroller routing keeps `/twoFA/edit` reachable by URL. `zp_user.twoFAEnabled` /
 `twoFASecret` are deliberately **not** wiped, so flipping the env back restores each user's prior
 state without re-enrolling authenticator apps.
+
+### Running the toolchain without a local PHP install
+
+The maintainer's machines do **not** necessarily have PHP, Composer, or `vendor/`. Everything below
+runs in throwaway containers. Run these from the repo root. `-u "$(id -u):$(id -g)"` matters — without
+it Composer writes root-owned files into the working tree.
+
+```bash
+# vendor/ is gitignored and disposable; it is required for pint/phpstan/codecept.
+# --ignore-platform-reqs because the composer image lacks ldap/gd/zip.
+docker run --rm -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer \
+  -v "$PWD":/app -w /app composer:2 install --ignore-platform-reqs
+
+# Pint, PHPStan, unit tests. LEAN_SESSION_PASSWORD is REQUIRED even for static analysis —
+# the fork removed its default, so laravelConfig.php throws during PHPStan's bootstrap.
+docker run --rm -u "$(id -u):$(id -g)" \
+  -e LEAN_SESSION_PASSWORD=ephemeral -e LEAN_APP_URL=http://localhost \
+  -v "$PWD":/app -w /app php:8.3-cli-alpine sh -c '
+    php vendor/bin/pint --test --config .pint/pint.json
+    php -d memory_limit=2G vendor/bin/phpstan analyse -c .phpstan/phpstan.neon --no-progress
+    php vendor/bin/codecept run Unit'
+```
+
+Baselines and gotchas, so a future session does not chase ghosts:
+
+- **The expected unit-test result in that container is `583 tests, 1 error`.** The one error is
+  `TwoFAServiceTest` failing on `Unable to generate image: … GD extension` — `php:8.3-cli-alpine` has
+  no GD. It is environmental, not a regression. The project's own dev image has GD and it passes.
+- **Data providers use `@dataProvider` docblocks, not PHP attributes.** Codeception 5.3 here runs on
+  PHPUnit 9.5, where `#[DataProvider]` is silently ignored and the test dies with `ArgumentCountError`.
+- Pint skips `.blade.php`, and neither Pint nor PHPStan looks at `.ini` — template and translation
+  changes have no static-analysis gate.
+- `php -l` on changed files is a cheap first pass: `docker run --rm -v "$PWD":/app:ro php:8.3-fpm-alpine php -l /app/<file>`.
+- To exercise a class in isolation without booting the framework, stub its dependencies in their own
+  namespace blocks before `require`-ing the file. `scratchpad/policy_harness.php`-style throwaways
+  verified `OidcAccessPolicy` before `vendor/` even existed.
 
 ### Upstream sync — how commits must be structured
 

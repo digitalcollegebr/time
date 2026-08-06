@@ -390,6 +390,7 @@ Dockerfile       # Build multi-stage para produção
 docker-compose.yml
 UPSTREAM-SYNC.md # Procedimento para atualizar do upstream Leantime
 CLAUDE.md        # Documentação técnica detalhada da arquitetura
+HANDOFF.md       # Estado atual do desenvolvimento e pendências
 ```
 
 Para documentação detalhada da arquitetura (padrões de código, HTMX, sistema de templates, eventos, etc.), consulte o **[CLAUDE.md](CLAUDE.md)**.
